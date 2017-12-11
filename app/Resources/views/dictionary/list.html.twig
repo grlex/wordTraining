@@ -1,0 +1,13 @@
+{% extends 'main_template.html.twig' %}
+
+{% block title %}{{ 'title.dictionary_list'|trans }}{% endblock title %}
+{% block content %}
+    <h1>{{ block('title') }}</h1>
+    <ul class="list-unstyled">
+        {% for dictionary in dictionaries %}
+        <li>
+            <a href="{{ path('dictionary_words', { id: dictionary.id}) }}">{{ dictionary.name }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+{% endblock content %}

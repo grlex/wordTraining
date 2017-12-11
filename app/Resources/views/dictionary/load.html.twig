@@ -1,0 +1,115 @@
+{% extends 'main_template.html.twig' %}
+
+{% block title %}
+    {{ 'dictionary_loading.title.%dictionary_name%'|trans({'%dictionary_name%':dictionary.name}) }}
+{% endblock title %}
+
+{% block content %}
+
+    <h3>{{ block('title') }}</h3>
+    <div class="progress">
+        <div class="progress-bar" style="width: 0;">
+        </div>
+    </div>
+    <div id="status">
+        {{ 'dictionary_loading.loaded_words'|trans }} :
+        <span class="loaded">0</span>
+        /
+        <span class="total">0</span>
+        <span class="wait fa fa-spinner"></span>
+        <span class="done fa fa-check"></span>
+        <span class="cancelled fa fa-warning"></span>
+        <span class="result">
+        </span>
+    </div>
+
+    <button type="button" id="cancel" class="btn btn-default">{{ 'dictionary_loading.cancel'|trans}}</button>
+
+
+{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        #status{
+            margin-bottom: 2em;
+        }
+        #status .wait,
+        #status .done,
+        #status .cancelled{
+            display: none;
+        }
+        #status.wait .wait{
+            display: inline-block;
+            color: blue;
+        }
+        #status.done .done{
+            display: inline-block;
+            color: green;
+        }
+        #status.cancelled .cancelled{
+            display: inline-block;
+            color: red;
+        }
+    </style>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+
+    <script>
+
+        $(document).ready(function(){
+            var waitAnimation = {
+                start: function (iconElem) {
+                    iconElem.data('animating', true);
+                    iconElem.data('startTime', performance.now());
+                    this.redraw(iconElem, performance.now());
+                },
+                redraw: function redraw(iconElem, time) {
+                    iconElem.css({'transform': 'rotate(' + ((time - iconElem.data('startTime')) >> 1) + 'deg)'});
+                    if (iconElem.data('animating'))
+                        animationFrame = requestAnimationFrame(redraw.bind(null, iconElem));
+                },
+                stop: function (iconElem) {
+                    iconElem.data('animating', false);
+                }
+            };
+            waitAnimation.start($('#status .wait'));
+            $('#status').removeClass().addClass('wait');
+            //
+            $.post('/dictionary_loading.php', { id: {{ dictionary.id }}, start: 'start' });
+
+            setTimeout(function updateProgress() {
+                $.getJSON('/dictionary_loading.php', {id: {{ dictionary.id }}, progress: 'progress'}, function (data) {
+
+
+                    $('#status .loaded').text(data.loaded);
+                    $('#status .total').text(data.total);
+                    $('.progress .progress-bar').css('width', 100*data.loaded/data.total + '%');
+
+                    if (data.cancelled) {
+                        $('#status .result').text("{{'dictionary_loading.cancelled'|trans}}");
+                        waitAnimation.stop($('#status .wait'));
+                        $('#status').removeClass().addClass('cancelled');
+                        return;
+                    }
+                    if (data.done) {
+                        $('#status .result').text("{{'dictionary_loading.done'|trans}}");
+                        waitAnimation.stop($('#status .wait'));
+                        $('#status').removeClass().addClass('done');
+                        return;
+                    }
+
+                    progressTimer = setTimeout(updateProgress, 1000);
+                });
+            },1000);
+
+            $('button#cancel').click(function(){
+                $.post('/dictionary_loading.php', { id: {{ dictionary.id }}, cancel: 'cancel' });
+            });
+
+
+
+        });
+
+    </script>
+{% endblock javascripts %}

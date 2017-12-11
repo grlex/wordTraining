@@ -1,0 +1,159 @@
+{% extends 'vertical_center_layout.html.twig' %}
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .vertical-center-block-wrapper{
+            background: linear-gradient(to top, #50C1B7, #222F41);
+        }
+        .auth-panel{
+            background: linear-gradient(80deg, #2D333C, #5F687A);
+            padding: 3em 0;
+            box-shadow: -.2em .2em 1em black;
+            border-radius: 0.5em;
+            color: #CCCCCC;
+            position: relative;
+        }
+        .auth-panel .login-link a,
+        .auth-panel .register-link a{
+            color: #919293;
+            text-decoration: none;
+            font-size: 1.5em;
+        }
+        .auth-panel a.logout-link,
+        .auth-panel a.back-link{
+            color: #4FBDB4;
+            text-decoration: none;
+            font-size: 1.2em;
+        }
+        .auth-panel a.logout-link:hover,
+        .auth-panel a.back-link:hover{
+            text-decoration: underline;
+        }
+
+        .auth-panel .form-control::-webkit-input-placeholder {color:#757575; opacity: 1; }
+        .auth-panel .form-control::-moz-placeholder          {color:#757575; opacity: 1; }/* Firefox 19+ */
+        .auth-panel .form-control:-moz-placeholder           {color:#757575; opacity: 1; }/* Firefox 18- */
+        .auth-panel .form-control:-ms-input-placeholder      {color:#757575; opacity: 1; }
+        .auth-panel .form-control:focus::-webkit-input-placeholder {opacity: 0; transition: opacity 0.3s ease; }
+        .auth-panel .form-control:focus::-moz-placeholder          {opacity: 0; transition: opacity 0.3s ease; }
+        .auth-panel .form-control:focus:-moz-placeholder           {opacity: 0; transition: opacity 0.3s ease; }
+        .auth-panel .form-control:focus:-ms-input-placeholder      {opacity: 0; transition: opacity 0.3s ease; }
+        .auth-panel .form-control{
+            display: block;
+            color: white;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            border-bottom: 1px solid #5A6374;
+            outline: none !important;
+            box-shadow: none !important;
+            width: 100%;
+        }
+        .auth-panel .row{
+            margin-top: 2em;
+            padding: 0 10%;
+        }
+        .auth-panel .remember-me label{
+            color: #919293;
+            display: block;
+            cursor: pointer;
+            margin-left: 2em;
+        }
+        .auth-panel .remember-me input{
+            display: none;
+        }
+        .auth-panel .remember-me input+label::before{
+            display: block;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1.4em;
+            height: 1.4em;
+            margin-right: 2em;
+            vertical-align: middle;
+            content: '';
+            border: 0.13em solid #5A6374;
+            border-radius: .1em;
+
+        }
+        .auth-panel .remember-me input:checked+label::after{
+            display: block;
+            position: absolute;
+            left: .1em;
+            top: -.3em;
+
+            font-family: 'FontAwesome';
+            content: '\f00c';
+            font-size: 1.4em;
+            color: #4FBEB5;
+
+        }
+        .auth-panel .buttons input{
+            background: #4FBEB5;
+            color: white;
+            border: none;
+            box-shadow: 0 0 0.3em #333;
+            outline: none !important;
+            border-radius: 1em;
+            padding: 0.5em 1em;
+        }
+        .auth-panel .buttons input:hover{
+            background: #5fcfb6;
+            box-shadow: 0 0 0.5em #666;
+
+        }
+        .auth-panel .auth-links.login .login-link a,
+        .auth-panel .auth-links.register .register-link a{
+            color: #CCCCCC;
+            padding-bottom: 0.2em;
+            border-bottom: 0.08em solid #4FBEB5;
+        }
+        .auth-panel .errors{
+            color: rgba(255, 98, 73, 0.77);
+        }
+        .auth-panel .errors ul{
+            text-align: left;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+{% endblock stylesheets %}
+{% block content %}
+    <div class="row">
+        <div class="auth-panel
+                    col-md-4 col-md-offset-4
+                    col-sm-6 col-sm-offset-3
+                    col-xs-10 col-xs-offset-1">
+            <div>
+                {% if is_granted("IS_AUTHENTICATED_REMEMBERED") %}
+                    {{ 'layout.logged_in_as'|trans({'%username%': app.user.username}, 'FOSUserBundle') }} |
+                    <a class="logout-link" href="{{ path('fos_user_security_logout') }}">
+                        {{ 'layout.logout'|trans({}, 'FOSUserBundle') }}
+                    </a>
+                {% else %}
+                    <div class="row auth-links {{ app.request.pathInfo=='/login' ? 'login' : 'register' }}">
+                        <div class="login-link col-xs-6 pull-left"><a href="{{ path('fos_user_security_login') }}">{{ 'layout.login'|trans({}, 'FOSUserBundle') }}</a></div>
+                        <div class="register-link col-xs-6 pull-right"><a href="{{ path('fos_user_registration_register') }}">{{ 'layout.register'|trans({}, 'FOSUserBundle') }}</a></div>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if app.request.hasPreviousSession %}
+                {% for type, messages in app.session.flashbag.all() %}
+                    {% for message in messages %}
+                        <div class="flash-{{ type }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            {% endif %}
+
+            <div>
+                {% block fos_user_content %}
+                {% endblock fos_user_content %}
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

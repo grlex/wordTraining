@@ -1,0 +1,21 @@
+
+#status{
+    margin-bottom: 2em;
+}
+#status .wait,
+#status .done,
+#status .cancelled{
+    display: none;
+}
+#status.wait .wait{
+    display: inline-block;
+    color: blue;
+}
+#status.done .done{
+    display: inline-block;
+    color: green;
+}
+#status.cancelled .cancelled{
+    display: inline-block;
+    color: red;
+}

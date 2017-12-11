@@ -1,0 +1,61 @@
+{% trans_default_domain 'FOSUserBundle' %}
+
+{{ form_start(form, {'method': 'post', 'action': path('fos_user_registration_register'), 'attr': {'class': 'fos_user_registration_register'}}) }}
+    {#{ form_widget(form) }#}
+    {{ form_widget(form._token, {
+        attr: {
+            type:"hidden",
+        }
+    }) }}
+
+    <div class="row errors">
+        {{ form_errors(form) }}
+    </div>
+
+    <div class="row">
+        <div class="errors">{{ form_errors(form.username) }}</div>
+        {{ form_widget(form.username, {
+            attr: {
+                class:"form-control",
+                type:"text",
+                placeholder:'form.username'|trans ~ '*',
+            }
+        }) }}
+    </div>
+    <div class="row">
+        <div class="errors">{{ form_errors(form.username) }}</div>
+        {{ form_widget(form.email, {
+            attr: {
+                class:"form-control",
+                type:"text",
+                placeholder:'form.email'|trans,
+            },
+            required: false
+        }) }}
+    </div>
+    <div class="row">
+        <div class="errors">{{ form_errors(form.plainPassword.first) }}</div>
+        {{ form_widget(form.plainPassword.first, {
+            attr: {
+                class:"form-control",
+                type:"text",
+                placeholder:'form.password'|trans ~ '*',
+            }
+        }) }}
+    </div>
+    <div class="row">
+        <div class="errors">{{ form_errors(form.plainPassword.second) }}</div>
+        {{ form_widget(form.plainPassword.second, {
+            attr: {
+                class:"form-control",
+                type:"text",
+                placeholder:'form.password_confirmation'|trans ~ '*',
+            }
+        }) }}
+    </div>
+
+    <div class="row form-group buttons">
+        <input type="submit" value="{{ 'registration.submit'|trans }}" />
+    </div>
+
+{{ form_end(form, {'render_rest': false}) }}

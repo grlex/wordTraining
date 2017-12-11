@@ -1,0 +1,13 @@
+dictionary_loading:
+  title.%dictionary_name%: Loading words of the category "%dictionary_name%"
+  cancel: Cancel
+  cancelled: Cancelled
+  done: Done
+  loaded_words: Loaded words
+title:
+  dictionary_list: Dictionary list
+menu:
+  admin: Admin
+  category:
+    list: Dictionary list
+

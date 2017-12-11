@@ -1,0 +1,13 @@
+dictionary_loading:
+  title.%dictionary_name%: Загрузка слов для словаря "%dictionary_name%"
+  cancel: Отмена
+  canceled: Отменено
+  done: Завершено
+  loaded_words: Загружено слов
+title:
+  dictionary_list: Список словарей
+menu:
+  admin: Админка
+  dictionary:
+    list: Список словарей
+
