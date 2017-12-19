@@ -1,0 +1,4 @@
+.filterlist .fl-list > *:not(.fl-filtered){
+    display: none;
+}
+

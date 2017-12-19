@@ -100,7 +100,12 @@ vich_uploader:
 
 easy_admin:
     design:
-        form_theme: ['horizontal', 'VichUploaderBundle:Form:fields.html.twig']
+        form_theme:
+             - 'horizontal'
+             - '@CustomEasyAdminBundle/Resources/views/form/custom_easy_admin_form_theme.html.twig'
+        templates:
+            layout: '@CustomEasyAdminBundle/Resources/views/default/custom_layout.html.twig'
+
     entities:
         User:
             class: AppBundle\Entity\User
@@ -129,18 +134,14 @@ easy_admin:
             list:
                 fields:
                     - 'name'
-                    - 'wordCount'
-                    - property: 'loaded'
-                      template: '@CustomEasyAdminBundle/Resources/views/dictionary/field_load_progress.html.twig'
+                    - 'words'
+                    #- property: 'loaded'
+                    #  template: '@CustomEasyAdminBundle/Resources/views/dictionary/field_load_progress.html.twig'
                 actions: ['show', 'edit', 'delete' ]
 
             show:
                 fields: [ 'id', 'name', 'updatedAt', 'words' ]
-            new:
+            form:
                 fields:
                     - name
-                    - property: sourceFile
-                      type: vich_file
-                      type_options: { required: true }
-            edit:
-                fields: [ 'name' ]
+                    - words

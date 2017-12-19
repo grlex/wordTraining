@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  * @package AppBundle\Model
  * @ORM\Entity
  * @ORM\Table(name="dictionary")
- * @Vich\Uploadable
+ * @UniqueEntity("name")
  */
 class Dictionary {
     /**
@@ -38,67 +38,24 @@ class Dictionary {
     private $name;
 
     /**
-     * @var
-     * @ORM\Column(type="string", length=50)
-     */
-    private $sourceFilename;
-
-    /**
-     * @var File
-     * @Vich\UploadableField(mapping="dictionary_source", fileNameProperty="sourceFilename")
-     */
-    private $sourceFile;
-
-    /**
      * @var Word[] dictionary words
-     * @ORM\ManyToMany(targetEntity="Word", mappedBy="dictionaries", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="Word", inversedBy="dictionaries", cascade={"persist","merge", "detach"})
+     * @ORM\OrderBy({"spelling"="ASC"})
      */
     private $words;
 
     /**
-     * @var int word count
-     * @ORM\Column(type="integer")
+     * @var DictionaryLoading
+     * @ORM\OneToOne(targetEntity="DictionaryLoading", mappedBy="dictionary")
      */
-    private $wordCount;
-
-    /**
-     * @var bool loaded
-     * @ORM\Column(type="boolean")
-     */
-    private $loaded;
-
-    /**
-     * @var \DateTime
-     * @ORM\Column(type="datetime")
-     */
-    private $updatedAt;
-
+    private $loadingInfo;
 
 
 
     public function __toString(){
-       return $this->getName();
+        return $this->getName();
     }
 
-    public function setSourceFile(File $sourceFile = null)
-    {
-        $this->sourceFile = $sourceFile;
-
-        if ($sourceFile) {
-            $this->updatedAt = new \DateTime('now');
-            $this->wordCount = count(explode(',', file_get_contents($sourceFile->getRealPath())));
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return File|null
-     */
-    public function getSourceFile()
-    {
-        return $this->sourceFile;
-    }
 
     /**
      * Constructor
@@ -106,8 +63,6 @@ class Dictionary {
     public function __construct()
     {
         $this->words = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->wordCount = 0;
-        $this->loaded=false;
     }
 
     /* ========================  ================== */
@@ -157,9 +112,7 @@ class Dictionary {
      */
     public function addWord(\AppBundle\Entity\Word $word)
     {
-        $word->addToDictionary($this);
         $this->words[] = $word;
-        $this->wordCount++;
 
         return $this;
     }
@@ -171,9 +124,7 @@ class Dictionary {
      */
     public function removeWord(\AppBundle\Entity\Word $word)
     {
-        $word->removeFromDictionary($this);
         $this->words->removeElement($word);
-        $this->wordCount--;
     }
 
     /**
@@ -186,99 +137,28 @@ class Dictionary {
         return $this->words;
     }
 
+
     /**
-     * Set sourceFilename
+     * Set loadingInfo
      *
-     * @param string $sourceFilename
+     * @param \AppBundle\Entity\DictionaryLoading $loadingInfo
      *
      * @return Dictionary
      */
-    public function setSourceFilename($sourceFilename)
+    public function setLoadingInfo(\AppBundle\Entity\DictionaryLoading $loadingInfo = null)
     {
-        $this->sourceFilename = $sourceFilename;
+        $this->loadingInfo = $loadingInfo;
 
         return $this;
     }
 
     /**
-     * Get sourceFilename
+     * Get loadingInfo
      *
-     * @return string
+     * @return \AppBundle\Entity\DictionaryLoading
      */
-    public function getSourceFilename()
+    public function getLoadingInfo()
     {
-        return $this->sourceFilename;
-    }
-
-    /**
-     * Set updatedAt
-     *
-     * @param \DateTime $updatedAt
-     *
-     * @return Dictionary
-     */
-    public function setUpdatedAt($updatedAt)
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    /**
-     * Get updatedAt
-     *
-     * @return \DateTime
-     */
-    public function getUpdatedAt()
-    {
-        return $this->updatedAt;
-    }
-
-    /**
-     * Set wordCount
-     *
-     * @param integer $wordCount
-     *
-     * @return Dictionary
-     */
-    public function setWordCount($wordCount)
-    {
-        $this->wordCount = $wordCount;
-
-        return $this;
-    }
-
-    /**
-     * Get wordCount
-     *
-     * @return integer
-     */
-    public function getWordCount()
-    {
-        return $this->wordCount;
-    }
-
-    /**
-     * Set loaded
-     *
-     * @param boolean $loaded
-     *
-     * @return Dictionary
-     */
-    public function setLoaded($loaded)
-    {
-        $this->loaded = $loaded;
-
-        return $this;
-    }
-
-    /**
-     * Get loaded
-     *
-     * @return boolean
-     */
-    public function getLoaded()
-    {
-        return $this->loaded;
+        return $this->loadingInfo;
     }
 }

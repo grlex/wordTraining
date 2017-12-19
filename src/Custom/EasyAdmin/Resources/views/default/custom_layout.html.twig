@@ -1,0 +1,12 @@
+{% extends '@EasyAdminBundle/Resources/views/default/layout.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/words-collection-theme.css') }}"/>
+{% endblock head_stylesheets %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    <script src="{{ asset('js/words-collection-theme.js') }}"></script>
+
+{% endblock body_javascript %}

@@ -1,0 +1,132 @@
+.words-collection{
+    position: relative;
+    transition: opacity 0.3s;
+}
+.words-collection.locked::before{
+    display: block;
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background: silver;
+    opacity: .3;
+}
+.words-collection .add-word-action,
+.words-collection .remove-word-action,
+.words-collection .clear-words-action{
+    display: inline-block;
+    padding-left:1em;
+    padding-bottom: 1em;
+}
+.words-collection .words-collection-header{
+}
+
+.words-collection .filter-input{
+    margin-left: 1em;
+    margin-bottom: 1em;
+}
+.words-collection .scroll-container{
+    max-height: 30em;
+    width: 21em;
+    overflow: auto;
+}
+
+.words-collection .new-word-container > *,
+.words-collection .words-list .word{
+    margin: 0;
+    height: 2em;
+    padding-left: 5em;
+    position: relative;
+}
+
+.words-collection .new-word-container .word::before,
+.words-collection .words-list .word::before{
+    display: block;
+    width: 4em;
+    text-align: right;
+    position: absolute;
+    padding-top: .3em;
+    top: 0;
+    left: 0;
+    font-family: FontAwesome;
+    content: "\f067";
+}
+.words-collection .new-word-container .word::before{
+    font-family: FontAwesome;
+    content: "\f067";
+}
+
+.words-collection .words-list .word::before{
+    content: counter(word-number);
+    counter-increment: word-number
+}
+
+.words-collection .new-word-container .word.invalid .spelling,
+.words-collection .new-word-container .word.duplicate .spelling{
+    background: rgba(255, 153, 148, 0.50) !important;
+}
+.words-collection .new-word-container > .add-word-action:not(:first-child){
+    display: none;
+}
+.words-collection .new-word-container .message{
+    display:none;
+    color: red;
+    height: auto;
+}
+.words-collection .new-word-container .word.invalid ~ .message.invalid{
+    display: block;
+}
+.words-collection .new-word-container .word.duplicate  ~ .message.duplicate{
+    display: block;
+}
+
+.words-collection .words-list{
+    counter-reset: word-number;
+    overflow: hidden;
+}
+
+
+.words-collection .words-list .word input.spelling,
+.words-collection .new-word-container .word input.spelling
+{
+    border: 1px solid #ccc;
+}
+.words-collection .words-list .word input.spelling{
+    background: transparent;
+}
+
+.words-collection .words-file {
+    display: inline-block;
+    padding-bottom: 1em;
+    padding-left: 1em;
+}
+.words-collection .words-file input{
+    display: none;
+}
+.words-collection .words-file .icon.wait,
+.words-collection .words-file .icon.done,
+.words-collection .words-file .icon.fail{
+    display: none;
+}
+.words-collection .words-file.wait .icon.wait{
+    display: inline-block;
+    color: blue;
+}
+.words-collection .words-file.done .icon.done{
+    display: inline-block;
+    color: green;
+}
+.words-collection .words-file.fail .icon.fail{
+    display: inline-block;
+    color: red;
+}
+
+.words-collection .collection-empty{
+    margin-left: 5em;
+}
+
+
+

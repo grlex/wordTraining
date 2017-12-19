@@ -10,16 +10,18 @@ namespace AppBundle\Entity;
 
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Mapping;
 
 class WordRepository extends EntityRepository {
-    public function findBySpelling($spelling){
-        if(is_null($spelling) or !is_string($spelling)) return null;
-        return $this->createQueryBuilder('w')
-            ->select('w')
-            ->where('w.spelling=:spelling')
-            ->setMaxResults(1)
-            ->setparameter(':spelling', $spelling)
-            ->getQuery()
-            ->getOneOrNullResult();
+    public function createQueryBuilder($alias, $indexBy = null)
+    {
+
+        $qb = parent::createQueryBuilder($alias, $indexBy);
+        $qb->addOrderBy("e.spelling", "ASC");
+        //dump($qb->getDQL());die();
+        return $qb;
     }
-} 
+
+
+}
+

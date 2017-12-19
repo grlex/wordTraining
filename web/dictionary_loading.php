@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 
-define('PROJECT_DIR', __DIR__.'/..');
+define('PROJECT_DIR', dirname(__DIR__));
 
 function sendErrorResponse($error){
     $response = new JsonResponse(array(

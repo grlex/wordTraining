@@ -37,3 +37,7 @@ services:
     app.vich_uploader_namer:
         class: AppBundle\Service\VichUploaderNamer
         public: true
+
+    Custom\EasyAdmin\Form\WordType:
+        arguments: [ '@doctrine' ]
+        tags: [ 'form.type' ]

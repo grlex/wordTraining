@@ -11,8 +11,10 @@ use AppBundle\Entity\Dictionary;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AdminController as BaseAdminController;
 use FOS\UserBundle\Doctrine\UserManager;
 use AppBundle\Entity\User;
+use Symfony\Component\Form\FormBuilder;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Form\Extension\Core\Type;
 
 class AdminController extends BaseAdminController {
     protected $persistedDictionary;
@@ -45,14 +47,37 @@ class AdminController extends BaseAdminController {
     }
 
 
-    protected function prePersistDictionaryEntity(Dictionary $dictionary){
-        $this->persistedDictionary = $dictionary;
-    }
-    protected function preRemoveDictionaryEntity($dictionary){
-        $loadProgressFile = sprintf('%s/var/dictionaryLoading/%d.json', $this->getParameter('kernel.project_dir'), $dictionary->getId());
-        if(file_exists($loadProgressFile)){
-            unlink($loadProgressFile);
+
+    protected function loadDictionaryAction(){
+        if($this->request->getSession()->isStarted()){
+            $this->request->getSession()->save();
         }
+        $dictionaryId = $this->request->query->get('id');
+
+
     }
 
+    protected function createDictionaryEntityFormBuilder($dictionary, $view)
+    {
+        $formBuilder = parent::createEntityFormBuilder($dictionary, $view);
+        $formBuilder->remove('words');
+        $formBuilder->add('words', \Custom\EasyAdmin\Form\WordsCollectionType::class);
+        return $formBuilder;
+    }
+
+
+    protected function prePersistDictionaryEntity($dictionary)
+    {
+        //$words = $dictionary->getWords();
+        //foreach($words as $word) $word->addToDictionary($dictionary);
+        $this->preSaveDictionaryEntity($dictionary);
+    }
+
+    protected function preUpdateDictionaryEntity($dictionary)
+    {
+        $this->preSaveDictionaryEntity($dictionary);
+    }
+    protected function preSaveDictionaryEntity(Dictionary $dictionary){
+
+    }
 }

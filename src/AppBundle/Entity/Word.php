@@ -10,13 +10,21 @@ namespace AppBundle\Entity;
 
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\HttpFoundation\File\File;
 /**
  * Class Word
  * @package AppBundle\Model
  * @ORM\Entity(repositoryClass="WordRepository")
  * @ORM\Table(name="word")
+ * @Vich\Uploadable
+ * @UniqueEntity("spelling")
  */
 class Word {
+    const STATUS_PENDING = 1;
+    const STATUS_INCORRECT = 2;
+    const STATUS_TRANSLATED = 3;
     /**
      * @var int
      * @ORM\Id
@@ -31,7 +39,7 @@ class Word {
     private $spelling;
     /**
      * @var string
-     * @ORM\Column(type="string", length=50)
+     * @ORM\Column(type="string", length=50, nullable=true)
      */
     private $transcription;
     /**
@@ -47,16 +55,38 @@ class Word {
 
     /**
      * @var Dictionary
-     * @ORM\ManyToMany(targetEntity="Dictionary", inversedBy="words")
+     * @ORM\ManyToMany(targetEntity="Dictionary", mappedBy="words")
      */
     private $dictionaries;
+
+    /**
+     * @var string
+     * @ORM\Column(type="string", length=20, nullable=true)
+     */
+    private $audioFilename;
+    /**
+     * @var File
+     * @Vich\UploadableField(mapping="word_audio", fileNameProperty="audioFilename")
+     */
+    private $audioFile;
+
+    /**
+     * @var \DateTime
+     * @ORM\Column(type="datetime")
+     */
+    private $updatedAt;
+
+    /**
+     * @var int
+     * @ORM\Column(type="smallint")
+     */
+    private $status;
+
+
 
     public function __toString(){
         return $this->getSpelling();
     }
-
-
-    /* ==========================   =============== */
 
 
 
@@ -68,8 +98,30 @@ class Word {
         $this->dictionaries = new \Doctrine\Common\Collections\ArrayCollection();
         $this->translations = new \Doctrine\Common\Collections\ArrayCollection();
         $this->examples = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->status = self::STATUS_PENDING;
         $this->setSpelling($spelling);
+        $this->updatedAt = new \DateTime('now');
     }
+
+    public function setAudioFile(File $audioFile = null)
+    {
+        $this->audioFile = $audioFile;
+
+        if ($audioFile) {
+            $this->updatedAt = new \DateTime('now');
+        }
+
+        return $this;
+    }
+
+    public function getAudioFilename()
+    {
+        return $this->audioFilename;
+    }
+
+    /* ==========================   =============== */
+
+
 
     /**
      * Get id
@@ -90,6 +142,7 @@ class Word {
      */
     public function setSpelling($spelling)
     {
+
         $this->spelling = $spelling;
 
         return $this;
@@ -210,8 +263,8 @@ class Word {
      */
     public function addToDictionary(\AppBundle\Entity\Dictionary $dictionary)
     {
-        $this->dictionaries[] = $dictionary;
         $dictionary->addWord($this);
+        $this->dictionaries[] = $dictionary;
         return $this;
     }
 
@@ -222,8 +275,8 @@ class Word {
      */
     public function removeFromDictionary(\AppBundle\Entity\Dictionary $dictionary)
     {
-        $this->dictionaries->removeElement($dictionary);
         $dictionary->removeWord($this);
+        $this->dictionaries->removeElement($dictionary);
     }
 
     /**
@@ -236,27 +289,67 @@ class Word {
         return $this->dictionaries;
     }
 
+
     /**
-     * Add dictionary
+     * Set status
      *
-     * @param \AppBundle\Entity\Dictionary $dictionary
+     * @param integer $status
      *
      * @return Word
      */
-    public function addDictionary(\AppBundle\Entity\Dictionary $dictionary)
+    public function setStatus($status)
     {
-        $this->dictionaries[] = $dictionary;
+        $this->status = $status;
 
         return $this;
     }
 
     /**
-     * Remove dictionary
+     * Get status
      *
-     * @param \AppBundle\Entity\Dictionary $dictionary
+     * @return integer
      */
-    public function removeDictionary(\AppBundle\Entity\Dictionary $dictionary)
+    public function getStatus()
     {
-        $this->dictionaries->removeElement($dictionary);
+        return $this->status;
+    }
+
+    /**
+     * Set audioFilename
+     *
+     * @param string $audioFilename
+     *
+     * @return Word
+     */
+    public function setAudioFilename($audioFilename)
+    {
+        $this->audioFilename = $audioFilename;
+
+        return $this;
+    }
+
+
+    /**
+     * Set updatedAt
+     *
+     * @param \DateTime $updatedAt
+     *
+     * @return Word
+     */
+    public function setUpdatedAt($updatedAt)
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    /**
+     * Get updatedAt
+     *
+     * @return \DateTime
+     */
+    public function getUpdatedAt()
+    {
+        return $this->updatedAt;
     }
 }
