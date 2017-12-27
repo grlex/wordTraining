@@ -2,11 +2,14 @@
 
 {% block head_stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/words-collection-theme.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/customeasyadmin/stylesheet/words-collection-theme.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/customeasyadmin/stylesheet/field-dictionary-loading.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/customeasyadmin/stylesheet/field-word-sound-file.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/customeasyadmin/stylesheet/common.css') }}"/>
 {% endblock head_stylesheets %}
 
 {% block body_javascript %}
     {{ parent() }}
-    <script src="{{ asset('js/words-collection-theme.js') }}"></script>
-
+    <script src="{{ asset('bundles/customeasyadmin/javascript/words-collection-theme.js') }}"></script>
+    <script src="{{ asset('bundles/customeasyadmin/javascript/field-dictionary-loading.js') }}"></script>
 {% endblock body_javascript %}

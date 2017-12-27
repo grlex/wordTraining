@@ -2,6 +2,7 @@ imports:
     - { resource: parameters.yml }
     - { resource: security.yml }
     - { resource: services.yml }
+    - { resource: easy_admin.yml }
 
 
 # Put parameters here that don't need to change on each machine where the app is deployed
@@ -57,6 +58,8 @@ doctrine:
         #path: '%database_path%'
         driver: pdo_sqlite
         path: '%database_path%'
+        options:
+
 
     orm:
         auto_generate_proxy_classes: '%kernel.debug%'
@@ -89,59 +92,12 @@ fos_user:
 vich_uploader:
     db_driver:  orm         # or mongodb or propel or phpcr - default db driver
     mappings:
-        dictionary_source:
-            #uri_prefix:         web   # uri prefix to resource
-            upload_destination: %app.dictionary_sources_dir%     # gaufrette storage fs id, required
-            #delete_on_remove:   true  # determines whether to delete file upon removal of entity
-            #delete_on_update:   true  # determines wheter to delete the file upon update of entity
-            #inject_on_load:     false # determines whether to inject a File instance upon load
-            namer: app.vich_uploader_namer
+        word_sound:
+            uri_prefix: '/%words_sound_web_dir%'
+            upload_destination: '%kernel.project_dir%/web/%words_sound_web_dir%'
+            namer:
+                service: vich_uploader.namer_property
+                options: { property: 'spelling'}
 
 
-easy_admin:
-    design:
-        form_theme:
-             - 'horizontal'
-             - '@CustomEasyAdminBundle/Resources/views/form/custom_easy_admin_form_theme.html.twig'
-        templates:
-            layout: '@CustomEasyAdminBundle/Resources/views/default/custom_layout.html.twig'
 
-    entities:
-        User:
-            class: AppBundle\Entity\User
-            form:
-                fields:
-                    - username
-                    - property: email
-                      type: email
-                      type_options: { required: false }
-                    - enabled
-                    - property: plainPassword
-                      label: password
-                      type: password
-                      type_options: { required: true}
-                    - roles
-            edit:
-                fields:
-                    - property: plainPassword
-                      label: new password
-                      type: password
-                      type_options: {required: false}
-
-        Dictionary:
-            class: AppBundle\Entity\Dictionary
-
-            list:
-                fields:
-                    - 'name'
-                    - 'words'
-                    #- property: 'loaded'
-                    #  template: '@CustomEasyAdminBundle/Resources/views/dictionary/field_load_progress.html.twig'
-                actions: ['show', 'edit', 'delete' ]
-
-            show:
-                fields: [ 'id', 'name', 'updatedAt', 'words' ]
-            form:
-                fields:
-                    - name
-                    - words

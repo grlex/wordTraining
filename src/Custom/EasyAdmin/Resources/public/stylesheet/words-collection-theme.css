@@ -98,31 +98,42 @@
     background: transparent;
 }
 
-.words-collection .words-file {
+.words-collection .words-import {
     display: inline-block;
     padding-bottom: 1em;
     padding-left: 1em;
 }
-.words-collection .words-file input{
+.words-collection .words-import .icon.wait,
+.words-collection .words-import .icon.done,
+.words-collection .words-import .icon.fail{
     display: none;
 }
-.words-collection .words-file .icon.wait,
-.words-collection .words-file .icon.done,
-.words-collection .words-file .icon.fail{
-    display: none;
-}
-.words-collection .words-file.wait .icon.wait{
+.words-collection .words-import.wait .icon.wait{
     display: inline-block;
     color: blue;
 }
-.words-collection .words-file.done .icon.done{
+.words-collection .words-import.done .icon.done{
     display: inline-block;
     color: green;
 }
-.words-collection .words-file.fail .icon.fail{
+.words-collection .words-import.fail .icon.fail{
     display: inline-block;
     color: red;
 }
+
+.words-collection .words-file input{
+    display: none;
+}
+
+.words-collection .words-text .modal .modal-body{
+    position: relative;
+}
+.words-collection .words-text .modal textarea{
+    width: 100%;
+    resize: vertical;
+}
+
+
 
 .words-collection .collection-empty{
     margin-left: 5em;

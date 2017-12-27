@@ -18,5 +18,5 @@ parameters:
     # A secret key that's used to generate certain security-related tokens
     secret: ThisTokenIsNotSoSecretChangeIt
     # additional
-    php_interpreter: ~
-    app.dictionary_sources_dir: var/data/dictionary_sources
+    word_loader.request_interval: ~
+    words_sound_web_dir: ~

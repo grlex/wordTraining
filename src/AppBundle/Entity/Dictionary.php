@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 /**
  * Class Dictionary
  * @package AppBundle\Model
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass = "DictionaryRepository")
  * @ORM\Table(name="dictionary")
  * @UniqueEntity("name")
  */
@@ -41,14 +41,22 @@ class Dictionary {
      * @var Word[] dictionary words
      * @ORM\ManyToMany(targetEntity="Word", inversedBy="dictionaries", cascade={"persist","merge", "detach"})
      * @ORM\OrderBy({"spelling"="ASC"})
+     * @ORM\JoinTable(joinColumns={@ORM\JoinColumn(name="dictionary_id", referencedColumnName="id", onDelete="CASCADE", unique=false)},
+     *         inverseJoinColumns={@ORM\JoinColumn(name="word_id", referencedColumnName="id", onDelete="CASCADE", unique=false)})
      */
     private $words;
 
     /**
      * @var DictionaryLoading
-     * @ORM\OneToOne(targetEntity="DictionaryLoading", mappedBy="dictionary")
+     * @ORM\OneToOne(targetEntity="DictionaryLoading", mappedBy="dictionary", cascade={"persist", "remove"})
      */
     private $loadingInfo;
+
+    /**
+     * @var Package
+     * @ORM\OneToMany(targetEntity="Package", mappedBy="dictionary", cascade={"persist", "remove"})
+     */
+    private $packages;
 
 
 
@@ -63,6 +71,7 @@ class Dictionary {
     public function __construct()
     {
         $this->words = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->packages = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /* ========================  ================== */
@@ -113,7 +122,9 @@ class Dictionary {
     public function addWord(\AppBundle\Entity\Word $word)
     {
         $this->words[] = $word;
-
+        $total = $this->loadingInfo->getTotal();
+        $this->loadingInfo->setTotal(++$total);
+        $this->loadingInfo->setStatus(DictionaryLoading::STATUS_PENDING);
         return $this;
     }
 
@@ -125,6 +136,10 @@ class Dictionary {
     public function removeWord(\AppBundle\Entity\Word $word)
     {
         $this->words->removeElement($word);
+        $total = $this->loadingInfo->getTotal();
+        $this->loadingInfo->setTotal(--$total);
+        $loaded = $this->loadingInfo->getLoaded();
+        $this->loadingInfo->setLoaded($loaded>$total ? $total : $loaded );
     }
 
     /**
@@ -147,6 +162,7 @@ class Dictionary {
      */
     public function setLoadingInfo(\AppBundle\Entity\DictionaryLoading $loadingInfo = null)
     {
+        $loadingInfo->setDictionary($this);
         $this->loadingInfo = $loadingInfo;
 
         return $this;
@@ -160,5 +176,41 @@ class Dictionary {
     public function getLoadingInfo()
     {
         return $this->loadingInfo;
+    }
+
+    /**
+     * Add package
+     *
+     * @param Package $package
+     *
+     * @return Dictionary
+     */
+    public function addPackage(Package $package)
+    {
+        $this->packages[] = $package;
+        return $this;
+    }
+
+    /**
+     * Remove package
+     *
+     * @param Package $package
+     *
+     * @return Dictionary
+     */
+    public function removePackage(Package $package)
+    {
+        $this->packages->removeElement($package);
+        return $this;
+    }
+
+    /**
+     * Get packages
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getPackages()
+    {
+        return $this->packages;
     }
 }

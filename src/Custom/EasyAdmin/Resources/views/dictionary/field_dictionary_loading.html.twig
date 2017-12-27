@@ -1,0 +1,29 @@
+{% trans_default_domain 'CustomEasyAdminBundle' %}
+
+<div class="dictionary-loading-widget" id="dictionary-{{ item.id }}"
+        data-dictionary-id="{{ item.id }}"
+        data-status="{{ value.status }}"
+        data-loaded="{{ value.loaded }}"
+        data-total="{{ value.total }}">
+    <div class="progress">
+        <div class="progress-bar progress-bar-striped" style="width: 0;">
+        </div>
+    </div>
+    <div class="status">
+        <span class="loaded">{{ value.loaded}}</span> / <span class="total">{{ value.total}}</span>
+        <span class="icon loading fa fa-spinner"></span>
+        <span class="icon done fa fa-check"></span>
+        <span class="result done">
+            {{ 'dictionary_loading.done'|trans }}
+        </span>
+        <span class="result loading">
+            {{ 'dictionary_loading.loading'|trans }}
+            <a href="#" class="pause"><span class="fa fa-pause"></span></a>
+        </span>
+        <span class="result paused">
+            {{ 'dictionary_loading.paused'|trans }}
+            <a href="#" class="resume"><span class="fa fa-play"></span></a>
+        </span>
+    </div>
+
+</div>

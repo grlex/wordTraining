@@ -42,9 +42,9 @@ class Example {
      */
     private $word;
 
-    /*public function __toString(){
-        return $this->getTranslation();
-    }*/
+    public function __toString(){
+        return $this->getEnglish();
+    }
 
     /* ==========================   =============== */
 

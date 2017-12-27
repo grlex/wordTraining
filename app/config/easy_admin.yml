@@ -1,0 +1,105 @@
+easy_admin:
+    design:
+        form_theme:
+             - 'horizontal'
+             - '@CustomEasyAdminBundle/Resources/views/form/custom_easy_admin_form_theme.html.twig'
+        templates:
+            layout: '@CustomEasyAdminBundle/Resources/views/default/custom_layout.html.twig'
+
+    entities:
+        User:
+            class: AppBundle\Entity\User
+            form:
+                fields:
+                    - username
+                    - property: email
+                      type: email
+                      type_options: { required: false }
+                    - enabled
+                    - property: plainPassword
+                      label: password
+                      type: password
+                      type_options: { required: true}
+                    - roles
+            edit:
+                fields:
+                    - property: plainPassword
+                      label: new password
+                      type: password
+                      type_options: {required: false}
+
+        Dictionary:
+            controller: Custom\EasyAdmin\Controller\DictionaryAdminController
+            class: AppBundle\Entity\Dictionary
+
+            list:
+                fields:
+                    - 'name'
+                    - 'words'
+                    - property: 'loadingInfo'
+                      template: '@CustomEasyAdminBundle/Resources/views/dictionary/field_dictionary_loading.html.twig'
+                      sortable: false
+                actions: ['show', 'edit', 'delete' ]
+
+            show:
+                fields: [ 'id', 'name', 'words' ]
+            form:
+                fields:
+                    - name
+                    - property: words
+                      type: Custom\EasyAdmin\Form\WordsCollectionType
+        Word:
+            class: AppBundle\Entity\Word
+            list:
+                actions: [ 'show', 'edit', 'delete' ]
+                fields:
+                    - id
+                    - spelling
+                    - property: transcription
+                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_transcription.html.twig'
+                    - property: 'soundFilename'
+                      label: 'word.soundFilename'
+                      sortable: false
+                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_sound_file.html.twig'
+                    - property: status
+                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_status.html.twig'
+                    - property: translations
+                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_translations.html.twig'
+                    - examples
+                    - dictionaries
+                    - forms
+            show:
+                fields:
+                    - id
+                    - spelling
+                    - property: transcription
+                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_transcription.html.twig'
+                    - property: 'soundFilename'
+                      label: 'word.soundFilename'
+                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_sound_file.html.twig'
+                    - property: status
+                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_status.html.twig'
+                    - translations
+                    - property: examples
+                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_examples.html.twig'
+                    - dictionaries
+                    - property: forms
+                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_forms.html.twig'
+            form:
+                fields:
+                    - spelling
+                    - transcription
+                    - property: 'soundFile'
+                      label: 'word.soundFile'
+                      type: 'vich_file'
+                    #- status
+                    - property: translations
+                      type: collection
+                      type_options:
+                          entry_type: Custom\EasyAdmin\Form\TranslationType
+                    - property: examples
+                      type: collection
+                      type_options:
+                          entry_type: Custom\EasyAdmin\Form\ExampleType
+                    - dictionaries
+                    #- forms

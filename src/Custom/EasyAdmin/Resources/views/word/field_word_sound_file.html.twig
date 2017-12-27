@@ -1,0 +1,8 @@
+<div class="word-sound-widget">
+    <span   class="fa fa-volume-up"
+            onclick="$(this).next('audio').get(0).play()">
+    </span>
+    <audio>
+        <source src="{{ vich_uploader_asset(item, 'soundFile') }}"/>
+    </audio>
+</div>

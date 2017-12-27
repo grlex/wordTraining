@@ -8,23 +8,26 @@
 
 namespace AppBundle\Entity;
 
+use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\HttpFoundation\File\File;
 /**
  * Class Word
  * @package AppBundle\Model
  * @ORM\Entity(repositoryClass="WordRepository")
  * @ORM\Table(name="word")
- * @Vich\Uploadable
  * @UniqueEntity("spelling")
+ * @ORM\HasLifecycleCallbacks()
+ * @Vich\Uploadable
  */
 class Word {
     const STATUS_PENDING = 1;
-    const STATUS_INCORRECT = 2;
-    const STATUS_TRANSLATED = 3;
+    const STATUS_LOADING = 2;
+    const STATUS_INCORRECT = 3;
+    const STATUS_TRANSLATED = 4;
     /**
      * @var int
      * @ORM\Id
@@ -55,6 +58,8 @@ class Word {
 
     /**
      * @var Dictionary
+     * word is mapped side because it allows simpty add word to dictionary words's ArrayCollection
+     * and do nothing else due to dictionary is inversed (owning) side
      * @ORM\ManyToMany(targetEntity="Dictionary", mappedBy="words")
      */
     private $dictionaries;
@@ -63,12 +68,13 @@ class Word {
      * @var string
      * @ORM\Column(type="string", length=20, nullable=true)
      */
-    private $audioFilename;
+    private $soundFilename;
+
     /**
      * @var File
-     * @Vich\UploadableField(mapping="word_audio", fileNameProperty="audioFilename")
+     * @Vich\UploadableField(mapping="word_sound", fileNameProperty="soundFilename")
      */
-    private $audioFile;
+    private $soundFile;
 
     /**
      * @var \DateTime
@@ -81,6 +87,12 @@ class Word {
      * @ORM\Column(type="smallint")
      */
     private $status;
+
+    /**
+     * @var WordForm[]
+     * @ORM\OneToMany(targetEntity="WordForm", mappedBy="word", cascade={"persist", "remove"})
+     */
+    private $forms;
 
 
 
@@ -98,25 +110,35 @@ class Word {
         $this->dictionaries = new \Doctrine\Common\Collections\ArrayCollection();
         $this->translations = new \Doctrine\Common\Collections\ArrayCollection();
         $this->examples = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->forms = new \Doctrine\Common\Collections\ArrayCollection();
         $this->status = self::STATUS_PENDING;
-        $this->setSpelling($spelling);
         $this->updatedAt = new \DateTime('now');
+        $this->setSpelling($spelling);
     }
 
-    public function setAudioFile(File $audioFile = null)
-    {
-        $this->audioFile = $audioFile;
-
-        if ($audioFile) {
-            $this->updatedAt = new \DateTime('now');
+    /**
+     * @ORM\PreRemove
+     */
+    public function preRemove(LifecycleEventArgs $eventArgs){
+        $dictionaries = $this->getDictionaries();
+        foreach($dictionaries as $dictionary){
+            $this->removeFromDictionary($dictionary);
+            // dictionary is attached to object manager when requested via Word::getDictionaries() method,
+            // so it will be updated automatically within the same transaction as the word removal will
         }
+    }
 
+    public function setSoundFile(File $soundFile = null)
+    {
+        $this->soundFile = $soundFile;
+
+        if (null !== $soundFile) {
+            $this->updatedAt = new \DateTimeImmutable();
+        }
         return $this;
     }
-
-    public function getAudioFilename()
-    {
-        return $this->audioFilename;
+    public function getSoundFile(){
+        return $this->soundFile;
     }
 
     /* ==========================   =============== */
@@ -315,41 +337,61 @@ class Word {
     }
 
     /**
-     * Set audioFilename
+     * Set soundFilename
      *
-     * @param string $audioFilename
-     *
-     * @return Word
-     */
-    public function setAudioFilename($audioFilename)
-    {
-        $this->audioFilename = $audioFilename;
-
-        return $this;
-    }
-
-
-    /**
-     * Set updatedAt
-     *
-     * @param \DateTime $updatedAt
+     * @param string $soundFilename
      *
      * @return Word
      */
-    public function setUpdatedAt($updatedAt)
+    public function setSoundFilename($soundFilename)
     {
-        $this->updatedAt = $updatedAt;
+        $this->soundFilename = $soundFilename;
 
         return $this;
     }
 
     /**
-     * Get updatedAt
-     *
-     * @return \DateTime
+     * @return string
      */
-    public function getUpdatedAt()
+    public function getSoundFilename()
     {
-        return $this->updatedAt;
+        return $this->soundFilename;
+    }
+
+
+    /**
+     * Add form
+     *
+     * @param \AppBundle\Entity\WordForm $form
+     *
+     * @return Word
+     */
+    public function addForm(\AppBundle\Entity\WordForm $form)
+    {
+        $form->setWord($this);
+        $this->forms[] = $form;
+
+        return $this;
+    }
+
+    /**
+     * Remove form
+     *
+     * @param \AppBundle\Entity\WordForm $form
+     */
+    public function removeForm(\AppBundle\Entity\WordForm $form)
+    {
+        $form->setWord(null);
+        $this->forms->removeElement($form);
+    }
+
+    /**
+     * Get forms
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getForms()
+    {
+        return $this->forms;
     }
 }

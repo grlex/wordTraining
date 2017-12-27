@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 /**
  * Class Dictionary
  * @package AppBundle\Model
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass = "DictionaryRepository")
  * @ORM\Table(name="dictionary")
  * @UniqueEntity("name")
  */
@@ -39,13 +39,14 @@ class Dictionary {
 
     /**
      * @var Word[] dictionary words
-     * @ORM\ManyToMany(targetEntity="Word", mappedBy="dictionaries", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="Word", inversedBy="dictionaries", cascade={"persist","merge", "detach"})
+     * @ORM\OrderBy({"spelling"="ASC"})
      */
     private $words;
 
     /**
      * @var DictionaryLoading
-     * @ORM\OneToOne(targetEntity="DictionaryLoading", mappedBy="dictionary")
+     * @ORM\OneToOne(targetEntity="DictionaryLoading", mappedBy="dictionary", cascade={"persist"})
      */
     private $loadingInfo;
 
@@ -62,6 +63,7 @@ class Dictionary {
     public function __construct()
     {
         $this->words = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->words->count();
     }
 
     /* ========================  ================== */
@@ -111,7 +113,6 @@ class Dictionary {
      */
     public function addWord(\AppBundle\Entity\Word $word)
     {
-        $word->addToDictionary($this);
         $this->words[] = $word;
 
         return $this;
@@ -124,7 +125,6 @@ class Dictionary {
      */
     public function removeWord(\AppBundle\Entity\Word $word)
     {
-        $word->removeFromDictionary($this);
         $this->words->removeElement($word);
     }
 
@@ -138,4 +138,29 @@ class Dictionary {
         return $this->words;
     }
 
+
+    /**
+     * Set loadingInfo
+     *
+     * @param \AppBundle\Entity\DictionaryLoading $loadingInfo
+     *
+     * @return Dictionary
+     */
+    public function setLoadingInfo(\AppBundle\Entity\DictionaryLoading $loadingInfo = null)
+    {
+        $loadingInfo->setDictionary($this);
+        $this->loadingInfo = $loadingInfo;
+
+        return $this;
+    }
+
+    /**
+     * Get loadingInfo
+     *
+     * @return \AppBundle\Entity\DictionaryLoading
+     */
+    public function getLoadingInfo()
+    {
+        return $this->loadingInfo;
+    }
 }

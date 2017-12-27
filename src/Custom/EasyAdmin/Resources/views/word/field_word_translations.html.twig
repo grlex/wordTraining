@@ -1,0 +1,6 @@
+<div class="word-list-translations-widget">
+    {{ value.slice(0,3)|join(', ') }}
+    {% if value.count > 3 %}
+        <span>...</span>
+    {% endif %}
+</div>

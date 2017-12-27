@@ -18,13 +18,13 @@ use Symfony\Component\HttpFoundation\File\File;
  * @package AppBundle\Model
  * @ORM\Entity(repositoryClass="WordRepository")
  * @ORM\Table(name="word")
- * @Vich\Uploadable
  * @UniqueEntity("spelling")
  */
 class Word {
     const STATUS_PENDING = 1;
-    const STATUS_INCORRECT = 2;
-    const STATUS_TRANSLATED = 3;
+    const STATUS_LOADING = 2;
+    const STATUS_INCORRECT = 3;
+    const STATUS_TRANSLATED = 4;
     /**
      * @var int
      * @ORM\Id
@@ -39,7 +39,7 @@ class Word {
     private $spelling;
     /**
      * @var string
-     * @ORM\Column(type="string", length=50)
+     * @ORM\Column(type="string", length=50, nullable=true)
      */
     private $transcription;
     /**
@@ -55,32 +55,27 @@ class Word {
 
     /**
      * @var Dictionary
-     * @ORM\ManyToMany(targetEntity="Dictionary", inversedBy="words")
+     * @ORM\ManyToMany(targetEntity="Dictionary", mappedBy="words")
      */
     private $dictionaries;
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=20)
+     * @ORM\Column(type="string", length=20, nullable=true)
      */
-    private $audioFilename;
-    /**
-     * @var File
-     * @Vich\UploadableField(mapping="word_audio", fileNameProperty="audioFilename")
-     */
-    private $audioFile;
-
-    /**
-     * @var \DateTime
-     * @ORM\Column(type="datetime")
-     */
-    private $updatedAt;
+    private $soundFilename;
 
     /**
      * @var int
      * @ORM\Column(type="smallint")
      */
     private $status;
+
+    /**
+     * @var WordForm[]
+     * @ORM\OneToMany(targetEntity="WordForm", mappedBy="word")
+     */
+    private $forms;
 
 
 
@@ -98,20 +93,12 @@ class Word {
         $this->dictionaries = new \Doctrine\Common\Collections\ArrayCollection();
         $this->translations = new \Doctrine\Common\Collections\ArrayCollection();
         $this->examples = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->forms = new \Doctrine\Common\Collections\ArrayCollection();
         $this->status = self::STATUS_PENDING;
         $this->setSpelling($spelling);
     }
 
-    public function setAudioFile(File $audioFile = null)
-    {
-        $this->audioFile = $audioFile;
 
-        if ($audioFile) {
-            $this->updatedAt = new \DateTime('now');
-        }
-
-        return $this;
-    }
 
     /* ==========================   =============== */
 
@@ -136,6 +123,7 @@ class Word {
      */
     public function setSpelling($spelling)
     {
+
         $this->spelling = $spelling;
 
         return $this;
@@ -256,8 +244,8 @@ class Word {
      */
     public function addToDictionary(\AppBundle\Entity\Dictionary $dictionary)
     {
-        $this->dictionaries[] = $dictionary;
         $dictionary->addWord($this);
+        $this->dictionaries[] = $dictionary;
         return $this;
     }
 
@@ -268,8 +256,8 @@ class Word {
      */
     public function removeFromDictionary(\AppBundle\Entity\Dictionary $dictionary)
     {
-        $this->dictionaries->removeElement($dictionary);
         $dictionary->removeWord($this);
+        $this->dictionaries->removeElement($dictionary);
     }
 
     /**
@@ -281,6 +269,56 @@ class Word {
     {
         return $this->dictionaries;
     }
+
+
+    /**
+     * Set status
+     *
+     * @param integer $status
+     *
+     * @return Word
+     */
+    public function setStatus($status)
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * Get status
+     *
+     * @return integer
+     */
+    public function getStatus()
+    {
+        return $this->status;
+    }
+
+    /**
+     * Set soundFilename
+     *
+     * @param string $soundFilename
+     *
+     * @return Word
+     */
+    public function setSoundFilename($soundFilename)
+    {
+        $this->soundFilename = $soundFilename;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSoundFilename()
+    {
+        return $this->soundFilename;
+    }
+
+
+
 
     /**
      * Add dictionary
@@ -306,27 +344,4 @@ class Word {
         $this->dictionaries->removeElement($dictionary);
     }
 
-    /**
-     * Set status
-     *
-     * @param integer $status
-     *
-     * @return Word
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    /**
-     * Get status
-     *
-     * @return integer
-     */
-    public function getStatus()
-    {
-        return $this->status;
-    }
 }

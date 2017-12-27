@@ -7,6 +7,8 @@
  */
 namespace AppBundle\WordLoader;
 
+use AppBundle\Entity\Word;
+
 interface WordLoaderInterface {
-    public function loadWords();
-} 
+    public function loadWord(Word $word);
+}

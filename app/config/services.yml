@@ -37,7 +37,22 @@ services:
     app.vich_uploader_namer:
         class: AppBundle\Service\VichUploaderNamer
         public: true
+    app.word_loader:
+        class: AppBundle\WordLoader\WooordHuntRuWordLoader
+        arguments:
+              - '%kernel.project_dir%/web/%words_sound_web_dir%'
+              - '@doctrine'
+              - '%word_loader.request_interval%'
+              - '@event_dispatcher'
+        public: true
 
     Custom\EasyAdmin\Form\WordType:
         arguments: [ '@doctrine' ]
         tags: [ 'form.type' ]
+    Custom\EasyAdmin\Form\ExampleType:
+        arguments: [ '@doctrine' ]
+        tags: [ 'form.type' ]
+    Custom\EasyAdmin\Form\TranslationType:
+            arguments: [ '@doctrine' ]
+            tags: [ 'form.type' ]
+

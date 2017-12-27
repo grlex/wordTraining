@@ -3,4 +3,96 @@
 {% use "@CustomEasyAdminBundle/Resources/views/form/words_collection_theme.html.twig" %}
 
 
+{% block form_label_class %}
+    {% if 'collection' in form.parent.vars.block_prefixes %}
+        {{ 'hidden' }}
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock form_label_class %}
+
+{% block form_group_class %}
+    {% if 'collection' in form.parent.vars.block_prefixes %}
+        {{ block('collection_item_group_class') }}
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+
+{% endblock form_group_class %}
+
+{% block collection_item_group_class %}
+    {{ 'col-xs-10' }}
+{% endblock collection_item_group_class %}
+
+
+{% block collection_row %}
+    {{ block('form_row') }}
+
+    {% if allow_add|default(false) %}
+        {% set js_add_item %}
+        $(function() {
+        if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
+
+        var collection = $('#{{ id }}');
+        // Use a counter to avoid having the same index more than once
+        var numItems = collection.data('count') || collection.children('div.form-group').length;
+
+        collection.prev('.collection-empty').remove();
+
+        var newItem = collection.attr('data-prototype')
+        .replace(/\>__name__label__\</g, '>' + numItems + '<')
+        .replace(/_{{ name }}___name__/g, '_{{ name }}_' + numItems)
+        .replace(/{{ name }}\]\[__name__\]/g, '{{ name }}][' + numItems + ']')
+        ;
+
+        // Increment the counter and store it in the collection
+        collection.data('count', ++numItems);
+
+        collection.append(newItem).trigger('easyadmin.collection.item-added');
+        });
+        {% endset %}
+        <div class="form-group">
+            <div class="{{ block('form_label_class') }}"></div>
+            <div class="{{ block('form_group_class') }}">
+                <div class="form-group">
+                    <div class="text-right field-collection-action {{ block('collection_item_group_class') }}">
+                        <a href="#" onclick="{{ js_add_item|raw }}" class="text-primary">
+                            <i class="fa fa-plus-square"></i>
+                            {{ (form|length == 0 ? 'action.add_new_item' : 'action.add_another_item')|trans({}, 'EasyAdminBundle') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endif %}
+{% endblock collection_row %}
+
+{% block vich_file_widget %}
+    {% spaceless %}
+        <div class="easyadmin-vich-file">
+            {% if download_uri|default('') is not empty %}
+                {% set download_title = download_uri|split('/')|last ?: 'download'|trans({}, 'VichUploaderBundle') %}
+                <a href="{{ asset(download_uri) }}">{{ download_title }}</a>
+            {% endif %}
+
+            {% if form.delete is defined %}
+                <label style="display: inline-block; padding: 0 1em">
+                    <input  type="checkbox"
+                            id="{{ form.delete.vars.id }}"
+                            name=" {{ form.delete.vars.full_name }}"
+                            value="1">
+                    Удалить?
+                </label>
+            {% endif %}
+            {{ form_widget(form.file, { attr: { style: 'display: inline'} }) }}
+
+        </div>
+    {% endspaceless %}
+{% endblock %}
+
+
+
+
+
 

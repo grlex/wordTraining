@@ -1,0 +1,51 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Alexey Grigoriev
+ * Date: 29.11.2017
+ * Time: 13:53
+ */
+
+namespace AppBundle\Entity;
+
+use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\ORM\Mapping as ORM;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\HttpFoundation\File\File;
+/**
+ * Class Word
+ * @package AppBundle\Model
+ * @ORM\Entity
+ * @ORM\Table(name="word_usage")
+
+ */
+class WordUsage {
+    const STATUS_PENDING = 1;
+    const STATUS_LOADING = 2;
+    const STATUS_INCORRECT = 3;
+    const STATUS_TRANSLATED = 4;
+    /**
+     * @var int
+     * @ORM\Id
+     * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    private $id;
+    /**
+     * @var string
+     * @ORM\Column(type="string", length=200)
+     */
+    private $usage;
+    /**
+     * @var Word
+     * @ORM\ManyToOne(targetEntity="Word", inversedBy="usages")
+     */
+    private $word;
+    /**
+     * @var Word
+     * @ORM\OneToOne(targetEntity="Word")
+     */
+    private $targetWord;
+
+}

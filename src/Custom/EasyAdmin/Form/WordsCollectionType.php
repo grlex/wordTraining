@@ -19,11 +19,11 @@ class WordsCollectionType extends AbstractType {
     public function buildView(FormView $view, FormInterface $form, array $options)
     {
         parent::buildView($view, $form, $options);
-        $view->vars['words_collection'] = true;
         $view->vars['attr']['class'] = 'words-collection';
     }
 
     public function configureOptions(OptionsResolver $resolver){
+        parent::configureOptions($resolver);
         $resolver->setDefaults(array(
             'entry_type' => \Custom\EasyAdmin\Form\WordType::class,
             'allow_add' => true,

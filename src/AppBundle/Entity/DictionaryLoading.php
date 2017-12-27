@@ -13,11 +13,16 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Class DictionaryLoading
  * @package AppBundle\Entity
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="DictionaryLoadingRepository")
  * @ORM\Table("dictionary_loading")
  */
 class DictionaryLoading {
 
+    const STATUS_PENDING = 1;
+    const STATUS_LOADING = 2;
+    const STATUS_DONE = 3;
+    const STATUS_PAUSING = 4;
+    const STATUS_PAUSED = 5;
     /**
      * @var int
      * @ORM\Id
@@ -37,25 +42,21 @@ class DictionaryLoading {
     protected $total;
     /**
      * @var int
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(type="smallint")
      */
-    protected $done;
-    /**
-     * @var int
-     * @ORM\Column(type="boolean")
-     */
-    protected $cancelled;
+    protected $status;
+
     /**
      * @var Dictionary
-     * @ORM\OneToOne(targetEntity="Dictionary", inversedBy="loading")
+     * @ORM\OneToOne(targetEntity="Dictionary", inversedBy="loadingInfo")
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $dictionary;
 
     public function __construct(){
         $this->loaded=0;
         $this->total = 0;
-        $this->done= false;
-        $this->cancelled = false;
+        $this->status = self::STATUS_PENDING;
     }
 
     /* -====================================== */
@@ -118,52 +119,29 @@ class DictionaryLoading {
         return $this->total;
     }
 
+
     /**
-     * Set done
+     * Set status
      *
-     * @param boolean $done
+     * @param boolean $status
      *
      * @return DictionaryLoading
      */
-    public function setDone($done)
+    public function setStatus($status)
     {
-        $this->done = $done;
+        $this->status = $status;
 
         return $this;
     }
 
     /**
-     * Get done
+     * Get status
      *
      * @return boolean
      */
-    public function getDone()
+    public function getStatus()
     {
-        return $this->done;
-    }
-
-    /**
-     * Set cancelled
-     *
-     * @param boolean $cancelled
-     *
-     * @return DictionaryLoading
-     */
-    public function setCancelled($cancelled)
-    {
-        $this->cancelled = $cancelled;
-
-        return $this;
-    }
-
-    /**
-     * Get cancelled
-     *
-     * @return boolean
-     */
-    public function getCancelled()
-    {
-        return $this->cancelled;
+        return $this->status;
     }
 
     /**

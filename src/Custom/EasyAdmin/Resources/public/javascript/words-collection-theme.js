@@ -4,8 +4,16 @@
 
 
 
+class WordPurifier{
 
-
+    purify(word){
+        word = word.toLowerCase().replace(/^[^a-z]+|[^a-z]+$/,'');
+        if(word.length>1 && word.search(/[^a-z]/) == -1){
+            return word;
+        }
+        return "";
+    }
+}
 
 class WordsSearchIndex {
     constructor(){
@@ -25,8 +33,9 @@ class WordsSearchIndex {
         this.clearWords();
         this.addWords(words);
     }
-    addWord(word){
+    addWord(word, purify){
         if(!word) return false;
+
         var firstChar  = word[0];
         var keys = Object.keys(this.index);
         var searchRange;
@@ -39,22 +48,25 @@ class WordsSearchIndex {
         }
         else{
             searchRange = {
-                offset: 1,
+                offset: 0,
                 words: [word]
             };
+            this.index[firstChar] = searchRange;
             keys.push(firstChar);
             keys.sort();
             var prevRange = this.index[keys[keys.indexOf(firstChar)-1]];
             if(prevRange){
                 searchRange.offset = prevRange.offset + prevRange.words.length;
             }
-            this.index[firstChar] = searchRange;
+
         }
         //var keys = Object.keys(this.index).sort();
         var self = this;
+
         keys.slice(keys.indexOf(firstChar)+1).forEach(function(key){
             self.index[key].offset++;
         });
+
 
         this.wordCount++;
         return searchRange.offset + searchRange.words.indexOf(word);
@@ -104,13 +116,101 @@ class WordsSearchIndex {
 
 }
 
+class WordsImporter{
+    constructor(collection, searchIndex){
+        this.collection = collection;
+        this.list = this.collection.find('.words-list');
+        this.searchIndex = searchIndex;
+        this.wordPurifier = new WordPurifier();
+        this.doneCallback = null;
+    }
+
+    importWords(text, doneCallback){
+        this.collection.children('.collection-empty').remove();
+        //
+        var words = text.split(/\b/);
+        words = this.filterValidWords(words);
+        this.processWords(words);
+        this.doneCallback = doneCallback;
+    }
+
+    filterValidWords(words){
+        var validWords = Object.create(null);
+        for(var i =0; i< words.length; i++){
+            var word = this.wordPurifier.purify(words[i]);
+            if(word) validWords[word] = true;
+        }
+        return Object.keys(validWords).sort();
+    }
+
+    processWords(words){
+
+        this.wordPrototype = this.collection.data('prototype');
+        this.newItems = Object.create(null);
+        this.listItemNumber = this.searchIndex.getWordCount();
+
+        var i=0;
+        var self = this;
+
+        function addWord(){
+            while(i<words.length){
+                var word = words[i]; i++;
+                var wordIndex = self.searchIndex.addWord(word);
+                if(wordIndex !== false){
+                    self.createWordElement(word, wordIndex);
+                    self.listItemNumber++;
+                    setTimeout(addWord, 0);
+                    return;
+                }
+            }
+            self.appendWordsToList();
+
+        }
+        addWord();
+    }
+
+    createWordElement(word, offset){
+        var newItem = this.wordPrototype.replace(/__name__/g, this.listItemNumber);
+        newItem = $(newItem).children('.spelling').val(word).parent();
+
+        this.newItems["+"+offset] = newItem;
+
+    }
+
+    appendWordsToList(){
+
+        var self = this;
+        var wordIndexes = Object.keys(self.newItems);
+        var i = 0;
+        function fillList(){
+            while(i<wordIndexes.length){
+                var wordIndex = wordIndexes[i];
+                var newItem = self.newItems[wordIndex];
+                wordIndex = +wordIndex;
+                var elem = self.list.children().eq(wordIndex);
+                if (elem.length) elem.before(newItem);
+                else self.list.append(newItem);
+                i++;
+                if(i%200==0){
+                    setTimeout(fillList,0); return;
+                }
+            }
+        }
+        fillList();
+
+        self.collection.data('count', this.listItemNumber);
+
+        if(typeof this.doneCallback == 'function') this.doneCallback();
+
+    }
+}
 
 class WordsFileHandler {
-        constructor(collection, searchIndex){
+        constructor(collection, wordsImporter){
             this.collection = collection;
+            this.wordsImporter = wordsImporter;
             this.fileElem = collection.find('.words-collection-header .words-file input');
-            this.list = this.collection.find('.words-list');
-            this.searchIndex = searchIndex;
+
             this.waitAnimation = {
                 start: function (iconElem) {
                     iconElem.data('animating', true);
@@ -137,120 +237,79 @@ class WordsFileHandler {
                 if (file) {
                     self.process(file);
                 }
+                event.target.value = "";
             });
         }
         process(file){
-            this.collection.children('.collection-empty').remove();
             this.collection.addClass('locked');
-
             this.wordsFileElem = this.collection.children('.words-collection-header').children('.words-file');
             this.animationIcon = this.wordsFileElem.children('button').children('.icon.wait');
             this.waitAnimation.start(this.animationIcon);
             this.wordsFileElem.removeClass('wait done fail').addClass('wait');
 
-
             this.reader.readAsText(file);
-
-
-
         }
         onError(evt, collection){
             this.wordsFileElem.removeClass('wait done fail').addClass('fail');
             this.waitAnimation.stop(this.animationIcon);
-            this.collection.removeClass('locked');
-        }
-        onLoad(evt){
-
-            var words = evt.target.result.split(/\b/);
-            /*var words = [];
-            var chars = "abcdefghijklmnopqrstuvwxyz";
-            for(var i=0;i<5000;i++) words.push(chars[i%26]+chars[(i*3)%(1+i%22)]+chars[(i*12)%(1+i%23)]+chars[(i*5)%(1+i%24)]+chars[(i*7)%(1+i%25)]);
-            */
-
-            words = this.sieveWords(words);
-            this.processWords(words);
-        }
-        sieveWords(words){
-
-            var sievedWords = Object.create(null);
-            for(var i=0;i<words.length; i++){
-                var word = words[i].toLowerCase().replace(/^[^a-z]+|[^a-z]+$/,'');
-                if( word.length>1 && word.search(/[^a-z]/) == -1) {
-                    sievedWords[word] = true;
-                }
-            }
-            return Object.keys(sievedWords).sort();
-        }
-
-        processWords(words){
-
-            this.wordPrototype = this.collection.data('prototype');
-            this.newItems = Object.create(null);
-            this.listItemNumber = this.searchIndex.getWordCount();
-
-            var i=0;
-            var self = this;
-
-            function addWord(){
-                var word = words[i]; i++;
-
-
-                var wordIndex = self.searchIndex.addWord(word);
-                if(wordIndex !== false){
-                    self.createWordElement(word, wordIndex);
-                    self.listItemNumber++;
-                }
-
-                if(i<words.length) {
-                    setTimeout(addWord, 0);
-                }
-                else{
-                    self.appendWordsToList();
-                }
-
-            }
-            addWord();
-        }
-
-        createWordElement(word, wordIndex){
-            var newItem = this.wordPrototype.replace(/__name__/g, this.listItemNumber);
-            newItem = $(newItem).children('.spelling').val(word)
-                .parent().wrap('<li>').parent();
-
-            this.newItems["+"+wordIndex] = newItem;
-
-        }
-
-        appendWordsToList(){
-
-            var self = this;
-            var wordIndexes = Object.keys(self.newItems);
-            var i = 0;
-            function fillList(){
-                while(i<wordIndexes.length){
-                    var wordIndex = wordIndexes[i];
-                    var newItem = self.newItems[wordIndex];
-                    wordIndex = +wordIndex;
-                    var elem = self.list.children().eq(wordIndex);
-                    if (elem.length) elem.before(newItem);
-                    else self.list.append(newItem);
-                    i++;
-                    if(i%200==0){
-                        setTimeout(fillList,0); return;
-                    }
-                }
-            }
-            fillList();
-
-            self.collection.data('count', this.listItemNumber);
-            self.wordsFileElem.removeClass('wait done fail').addClass('done');
-            self.waitAnimation.stop(self.animationIcon);
             self.collection.removeClass('locked');
         }
-
-
+        onLoad(evt){
+            var self = this;
+            this.wordsImporter.importWords(evt.target.result , function(){
+                self.wordsFileElem.removeClass('wait done fail').addClass('done');
+                self.waitAnimation.stop(self.animationIcon);
+                self.collection.removeClass('locked');
+            });
+        }
 
     }
+
+class WordsTextHandler {
+    constructor(collection, wordsImporter){
+        this.collection = collection;
+        this.wordsImporter = wordsImporter;
+
+        this.modalElem = collection.find('.words-collection-header .words-text .modal');
+
+        this.waitAnimation = {
+            start: function (iconElem) {
+                iconElem.data('animating', true);
+                iconElem.data('startTime', performance.now());
+                this.redraw(iconElem, performance.now());
+            },
+            redraw: function redraw(iconElem, time) {
+                iconElem.css({'transform': 'rotate(' + ((time - iconElem.data('startTime')) >> 1) + 'deg)'});
+                if (iconElem.data('animating'))
+                    requestAnimationFrame(redraw.bind(null, iconElem));
+            },
+            stop: function (iconElem) {
+                iconElem.data('animating', false);
+            }
+        };
+        var self = this;
+
+        var modalTextarea = this.modalElem.find('.modal-body textarea');
+        this.modalElem.find('.accept').click(function(event){
+            self.modalElem.modal('hide');
+            self.process(modalTextarea.val());
+        });
+    }
+    process(text){
+        this.collection.addClass('locked');
+        this.wordsTextElem = this.collection.children('.words-collection-header').children('.words-text');
+        this.animationIcon = this.wordsTextElem.children('button').children('.icon.wait');
+        this.waitAnimation.start(this.animationIcon);
+        this.wordsTextElem.removeClass('wait done fail').addClass('wait');
+
+        var self = this;
+        this.wordsImporter.importWords(text , function(){
+            self.wordsTextElem.removeClass('wait done fail').addClass('done');
+            self.waitAnimation.stop(self.animationIcon);
+            self.collection.removeClass('locked');
+        });
+    }
+}
 
 
 class WordsFilterHandler{
@@ -278,35 +337,8 @@ class WordsFilterHandler{
         var filterText = this.filterInput.val();
         this.filter(filterText);
     }
-    _filter(filterText){
-        if(filterText===""){
-            this.list.addClass('filtered');
-            return;
-        }
-        this.list.removeClass('filtered');
-        var listItems = this.list.children();
-        var self = this;
-        var searchRange = this.searchIndex.getIndexRange(filterText);
 
-        console.log(searchRange);
-        if(this.lastSearchRange) {
-            if(this.lastSearchRange.filterText == filterText) return;
-            listItems.slice(this.lastSearchRange.first, this.lastSearchRange.last).removeClass('filtered');
-        }
-        listItems.slice(searchRange.first, searchRange.last).each(function(index, listItem){
-            console.log(index);
-            listItem = $(listItem);
-            if(self.filterListItem(listItem, filterText)) {
-                listItem.addClass('filtered');
-            }
-        });
-
-        this.lastSearchRange = searchRange;
-        this.lastSearchRange.filterText = filterText;
-
-    }
-
-    filter(filterText){
+    filter(filterText, one){
         if(filterText===""){
             this.list.css('margin-top', '');
             this.list.css('height', '');
@@ -329,13 +361,14 @@ class WordsFilterHandler{
             if(this.filterWord(words[i], filterText)){
                 if(startFilteredIndex==-1) startFilteredIndex = i;
                 untilFilteredIndex=i;
+                if(one) break;
             }
             else if(startFilteredIndex!=-1){
                 break;
             }
         }
         if(startFilteredIndex>=0) {
-            startFilteredIndex += offset; // list always contains 1 first empty elem
+            startFilteredIndex += offset;
             untilFilteredIndex += offset+1;
         }
         else{
@@ -357,74 +390,95 @@ class WordsFilterHandler{
 
 class WordsListHandler{
     constructor(collection, searchIndex, filterHandler){
+
         this.collection = collection;
         this.newWordContainer = collection.find('.new-word-container');
         this.list = collection.find('.words-list');
         this.searchIndex = searchIndex;
         this.filterHandler = filterHandler;
+        this.wordPurifier = new WordPurifier();
         this.collection.on('click', '.add-word-action a', this.onAddWordActionClick.bind(this));
+
+        this.newWordContainer.on('click', '.remove-word-action a', this.onRemoveWordActionClick.bind(this));
+        this.newWordContainer.on('keydown', '.word .spelling', this.onWordSpellingPreEdit.bind(this));
+        this.newWordContainer.on('keyup', '.word .spelling', this.onWordSpellingPostEdit.bind(this));
+
         this.list.on('click', '.remove-word-action a', this.onRemoveWordActionClick.bind(this));
-        this.list.on('keydown', 'li .spelling', this.onWordSpellingPreEdit.bind(this));
-        this.list.on('keyup', 'li .spelling', this.onWordSpellingPostEdit.bind(this));
+        this.list.on('keydown', '.word .spelling', this.onWordSpellingPreEdit.bind(this));
+        this.list.on('keyup', '.word .spelling', this.onWordSpellingPostEdit.bind(this));
+
         this.keyPressSortDelay = 500;
-        this.keyPressTimer = false;
+        this.keyPressSortTimer = false;
         this.collection.on('click', '.clear-words-action a', this.onClearWordsActionClick.bind(this));
-        this.addFakeFirstEmptyWordLi();
-    }
-    addFakeFirstEmptyWordLi(){
-        if(!this.list.children().first().hasClass('new')){
-            this.list.prepend('<li class="fake new"><input class="spelling"/></li>');
-        }
-    }
-    sortWordListItemAfterEdit(wordElem){
 
+        this.initSearchIndex();
+    }
 
-        var newSpelling = wordElem.val().trim();
-        var prevSpelling = wordElem.data('prevSpelling');
-        wordElem.data('prevSpelling', newSpelling);
+    initSearchIndex(){
+        var self = this;
+        this.list.children().each(function(index, elem){
+            self.searchIndex.addWord(elem.querySelector('.spelling').value);
+        });
+    }
+
+    sortWordAfterEdit(spellingElem){
+
+        var newSpelling = spellingElem.val().trim();
+        var purifiedNewSpelling = this.wordPurifier.purify(newSpelling);
+        var invalid = newSpelling!==purifiedNewSpelling;
+        var prevSpelling = spellingElem.data('prevSpelling');
+
+        spellingElem.data('prevSpelling', newSpelling);
 
         if(newSpelling !== prevSpelling){
 
-            var listItem = wordElem.closest('li').detach();
+            var wordElem = spellingElem.parent('.word');
+            wordElem.detach();
 
-            var prevDuplicate = listItem.hasClass('duplicate');
+            var prevDuplicate = wordElem.hasClass('duplicate');
             var newDuplicate = false;
             if (!prevDuplicate)
                 this.searchIndex.removeWord(prevSpelling);
-            listItem.removeClass('duplicate new');
 
-            var newIndex = this.searchIndex.addWord(newSpelling);
-            if (newIndex === false) {
-                this.list.prepend(listItem);
-                listItem.addClass('new');
-                listItem.next('.new').remove();
-                var name = wordElem.attr('name');
-                wordElem.removeAttr('name').attr('data-name',name);
+            wordElem.removeClass('duplicate invalid');
 
+            var newIndex;
+            if (invalid || (newIndex = this.searchIndex.addWord(purifiedNewSpelling)) === false) {
+
+                this.newWordContainer.prepend(wordElem);
+
+
+                var name = spellingElem.attr('name');
+                spellingElem.removeAttr('name').attr('data-name',name);
                 if (newSpelling === "") {
-                    wordElem.attr('placeholder', prevSpelling);
+                    spellingElem.attr('placeholder', prevSpelling);
+                }
+                else if(invalid){
+                    wordElem.addClass('invalid');
                 }
                 else {
-                    listItem.addClass('duplicate');
+                    wordElem.addClass('duplicate');
                     newDuplicate = true;
                 }
+                this.appendEmptyLabel(); // if needed
             }
             else {
-                this.addFakeFirstEmptyWordLi();
-                if (newIndex == this.list.children().length) {
-                    this.list.append(listItem);
+                if(newIndex >= this.list.children().length){
+                    this.list.append(wordElem);
                 }
                 else {
-                    this.list.children().eq(newIndex).before(listItem);
+                    this.list.children().eq(newIndex).before(wordElem);
                 }
-                var name = wordElem.attr('data-name',name);
-                if(name) wordElem.attr('name', name);
+                var name = spellingElem.attr('data-name');
+                if(name) spellingElem.attr('name', name);
+                this.removeEmptyLabel(); // if present
             }
-            //if(prevDuplicate && !newDuplicate) this.filterHandler.filter("");
-            //if(newDuplicate) this.filterHandler.filter(newSpelling);
+            if(newDuplicate) this.filterHandler.filter(newSpelling, true);
+            else this.filterHandler.filter("");
+
 
         }
-        wordElem.focus();
+        spellingElem.focus();
 
     }
     onWordSpellingPreEdit(event){
@@ -433,48 +487,55 @@ class WordsListHandler{
         wordElem.data('prevSpelling', wordElem.val().trim());
     }
     onWordSpellingPostEdit(event){
-        clearTimeout(this.keyPressTimer);
-        this.keyPressTimer = setTimeout(
-            this.sortWordListItemAfterEdit.bind(this, $(event.target)),
+        clearTimeout(this.keyPressSortTimer);
+        this.keyPressSortTimer = setTimeout(
+            this.sortWordAfterEdit.bind(this, $(event.target)),
             this.keyPressSortDelay
         );
     }
     onAddWordActionClick(event){
         if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
-        var emptyWordElem = this.list.children('.new:first-child:not(.fake)').find('.spelling');
-        if(emptyWordElem.length){
-            emptyWordElem.focus();
+        var newWordElem = this.newWordContainer.children('.word').find('.spelling');
+        if(newWordElem.length){
+            newWordElem.focus();
             return;
         }
         var numItems = this.collection.data('count') || this.list.children().length;
-        this.collection.children('.collection-empty').remove();
+        //this.collection.children('.collection-empty').remove();
 
-        var newItem = this.collection.attr('data-prototype')
-            .replace(/\>__name__label__\</g, '>' + numItems + '<')
-            .replace(/_{{ name }}___name__/g, '_{{ name }}_' + numItems)
-            .replace(/{{ name }}\]\[__name__\]/g, '{{ name }}][' + numItems + ']');
+        var newItem = this.collection.attr('data-prototype').replace(/__name__/g,  numItems );
 
-        newItem = $(newItem).wrapAll('<li>').parent().addClass('new');
-        this.list.prepend(newItem).trigger('easyadmin.collection.item-added');
-        newItem.next('.fake').remove();
+        newItem = $(newItem);
+        this.newWordContainer.prepend(newItem);
         newItem.find('.spelling').focus();
+
+        this.collection.trigger('easyadmin.collection.item-added');
         this.collection.data('count', ++numItems);
     }
     onRemoveWordActionClick(event){
         if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
 
-        var listItem = $(event.target).closest('li');
-        listItem.remove();
+        var wordElem = $(event.target).closest('.word');
+        wordElem.remove();
 
         this.collection.trigger('easyadmin.collection.item-deleted');
-        if ( 0 == this.list.children(':not(.fake)').length && 'undefined' !== this.collection.attr('data-empty-collection')) {
-            $(this.collection.attr('data-empty-collection')).appendTo(this.collection);
-        }
+        this.appendEmptyLabel();
 
-        var word = listItem.find('.spelling').val();
+        var word = wordElem.find('.spelling').val();
         this.searchIndex.removeWord(word);
-        this.addFakeFirstEmptyWordLi();
     }
+    appendEmptyLabel(){
+        if ( 0 == this.list.children().length ) {
+            if(this.collection.children('.collection-empty').length==0)
+                $(this.collection.attr('data-empty-collection')).appendTo(this.collection);
+        }
+    }
+    removeEmptyLabel(){
+        if (  this.list.children().length ) {
+            this.collection.children('.collection-empty').remove();
+        }
+    }
+
     onClearWordsActionClick(event){
         if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
         if(this.collection.children('.collection-empty').length) return;
@@ -482,23 +543,32 @@ class WordsListHandler{
         this.list.empty();
         $(this.collection.attr('data-empty-collection')).appendTo(this.collection);
         this.searchIndex.clearWords();
-        this.addFakeFirstEmptyWordLi();
     }
 }
 
-$('.words-collection').each(function(index, collection) {
+/*
+class WordsCollection{
+    constructor(collection){
+        this.collection = collection;
+        this.searchIndex = new WordsSearchIndex();
+        this.fileHandler = new WordsFileHandler(collection, this.searchIndex);
+        this.filterHandler = new WordsFilterHandler(collection, this.searchIndex);
+        this.listHandler = new WordsListHandler(collection, this.searchIndex, this.filterHandler);
+    }
+}*/
 
+$('.words-collection').each(function(index, collection) {
     collection = $(collection);
 
     var searchIndex = new WordsSearchIndex();
-    var fileHandler = new WordsFileHandler(collection, searchIndex);
+    var wordsImporter = new WordsImporter(collection, searchIndex);
+    var fileHandler = new WordsFileHandler(collection, wordsImporter);
+    var textHandler = new WordsTextHandler(collection, wordsImporter);
     var filterHandler = new WordsFilterHandler(collection, searchIndex);
     var listHandler = new WordsListHandler(collection, searchIndex, filterHandler);
 });
 
-jQuery.fn.dom = function(){
-    return this.first()[0];
-};
+
 
 
 //убрать появляющуюся метку ПУСТО, если мы удалили всего одно слово, а в списке еще есть слова

@@ -2,34 +2,55 @@
 
 
 {% block words_collection_row -%}
-    {# вместо collection_row блока, в котором также выводится add_new кнопка после коллекции#}
+    {# используем form_row блок вместо collection_row , чтобы перенести кнопку добавления нового элемента в заголовок
+     ( в collection_row кнопка добавления выводится в конце списка элементов ) #}
     {{ block('form_row') }}
 {%- endblock words_collection_row %}
+
+{%- block words_collection_widget -%}
+    {% if value is iterable and value is empty or form.vars.prototype is defined %}
+        {% set attr = attr|merge({'data-empty-collection': block('empty_collection') }) %}
+    {% endif %}
+    {% if prototype is defined %}
+        {%- set attr = attr|merge({'data-prototype': form_row(prototype) }) -%}
+    {% endif %}
+
+    <div {{ block('widget_container_attributes') }}>
+        {%- if form is rootform -%}
+            {{ form_errors(form) }}
+        {%- endif -%}
+        {{- block ('words_collection_header')-}}
+        {{- block('words_collection_rows') -}}
+        {{- form_rest(form) -}}
+    </div>
+{%- endblock words_collection_widget -%}
 
 
 {% block words_collection_header %}
     <div class="words-collection-header">
-        {{ block('collection_clear_action') }}
+        {{ block('words_collection_clear_action') }}
         {{ block('words_collection_filter') }}
         {{ block('words_collection_file') }}
-        {{ block('new_word_container') }}
+        {{ block('words_collection_text') }}
+        {{ block('words_collection_new_word_container') }}
     </div>
 {% endblock words_collection_header %}
 
-{% block new_word_container %}
+
+{% block words_collection_new_word_container %}
     <div class="new-word-container">
-        {{ block('collection_add_action') }}
+        {{ block('words_collection_add_action') }}
         <div class="invalid message">{{ 'words_collection.invalid'|trans }}</div>
         <div class="duplicate message">{{ 'words_collection.duplicate'|trans }}</div>
     </div>
-{% endblock new_word_container %}
+{% endblock words_collection_new_word_container %}
 
 {% block words_collection_filter %}
     <input type="text" class="filter-input" placeholder="{{ 'words_collection.filter'|trans }}"/>
 {% endblock words_collection_filter %}
 
 {% block words_collection_file %}
-    <div class="words-file">
+    <div class="words-file words-import">
         <input type="file"/>
         <button type="button" onclick="$(this).prev().click()">
             {{ 'words_collection.import_from_file'|trans }}
@@ -40,8 +61,36 @@
     </div>
 {% endblock  words_collection_file %}
 
+{% block words_collection_text %}
+    <div class="words-text words-import">
+        <div class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">{{ 'words_collection.import_from_text'|trans }}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <textarea></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default cancel" data-dismiss="modal">{{ 'words_collection.text_import_cancel'|trans }}</button>
+                        <button type="button" class="btn btn-primary accept">{{ 'words_collection.text_import_accept'|trans }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="button" onclick="$(this).prev().modal('show')">
+            {{ 'words_collection.import_from_text'|trans }}
+            <span class="icon wait fa fa-spinner"></span>
+            <span class="icon done fa fa-check"></span>
+            <span class="icon fail fa fa-warning"></span>
+        </button>
+    </div>
+{% endblock  words_collection_text %}
 
-{% block collection_add_action %}
+
+{% block words_collection_add_action %}
 
     {% if allow_add|default(false) %}
         <span class="add-word-action">
@@ -51,9 +100,9 @@
             </a>
         </span>
     {% endif %}
-{% endblock collection_add_action %}
+{% endblock words_collection_add_action %}
 
-{% block collection_clear_action %}
+{% block words_collection_clear_action %}
     {% if allow_delete|default(false) %}
         <span class="clear-words-action">
             <a href="#" class="text-primary">
@@ -62,9 +111,9 @@
             </a>
         </span>
     {% endif %}
-{% endblock collection_clear_action %}
+{% endblock words_collection_clear_action %}
 
-{% block collection_remove_action %}
+{% block words_collection_remove_action %}
     {% if form.parent.vars.allow_delete|default(false) %}
         <span class="remove-word-action">
             <a href="#"  class="text-danger">
@@ -73,59 +122,29 @@
             </a>
         </span>
     {% endif %}
-{% endblock collection_remove_action %}
-
-
-{# для вывода слова в колекции оставляем лишь необходимую разметку ( убираем label, widget, errors)#}
-{% block word_row %}
-
-    <div id="{{ id }}" class="word">
-        <input type="text"
-               class="spelling"
-               name="{{ form.spelling.vars.full_name }}"
-                value="{{ form.spelling.vars.value }}"/>
-        {{ block('collection_remove_action') }}
-    </div>
-
-{% endblock word_row %}
+{% endblock words_collection_remove_action %}
 
 
 
-
-{# переносим блок empty_collection внутрь div'а с data-prototype и id  коллекции #}
-{# вставляем заголовок с панелью управления для words_collection списка #}
-{%- block form_widget_compound -%}
-    {% if value is iterable and value is empty or form.vars.prototype is defined %}
-        {% set attr = attr|merge({'data-empty-collection': block('empty_collection') }) %}
-    {% endif %}
-
-    <div {{ block('widget_container_attributes') }}>
-        {%- if form is rootform -%}
-            {{ form_errors(form) }}
-        {%- endif -%}
-        {% if words_collection %}
-            {{- block ('words_collection_header')-}}
-        {% endif %}
-        {{- block('form_rows') -}}
-        {{- form_rest(form) -}}
-    </div>
-{%- endblock form_widget_compound -%}
-
-{# оборачиваем вывод слов коллекции words_collection в структуру <ul><li>...</li>...</ul>#}
-{%- block form_rows -%}
-    {% if words_collection|default(false) %}
-        <div class="scroll-container">
-            <div class="words-list">
-                {% for child in form %}
-                    {{- form_row(child) -}}
-                {% endfor %}
-            </div>
+{%- block words_collection_rows -%}
+    <div class="scroll-container">
+        <div class="words-list">
+            {% for child in form %}
+                    {{ form_row(child) }}
+            {% endfor %}
         </div>
-
-    {% else %}
-        {{ block('form_rows', 'form_div_layout.html.twig') }}
-    {% endif %}
+    </div>
     {% if value is iterable and value is empty %}
         {{ block('empty_collection') }}
     {% endif %}
-{%- endblock form_rows -%}
+{%- endblock words_collection_rows -%}
+
+{% block word_row %}
+    <div id="{{ form.vars.id }}" class="word">
+        <input type="text"
+               class="spelling"
+               name="{{ form.spelling.vars.full_name }}"
+               value="{{ form.spelling.vars.value }}"/>
+        {{ block('words_collection_remove_action') }}
+    </div>
+{% endblock word_row %}

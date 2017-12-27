@@ -31,6 +31,6 @@ class DictionaryController extends Controller {
      * @Route("/dictionary/{id}/words", name="dictionary_words")
      */
     public function wordsAction($id){
-        return $this->render('words.html.twig');
+        return $this->render('dictionary/words.html.twig');
     }
 } 
