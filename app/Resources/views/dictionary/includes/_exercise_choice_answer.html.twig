@@ -1,0 +1,16 @@
+<h4 class="header" tabindex="0">{{ 'dictionary.view.exercise.choose_correct_answer'|trans }}</h4>
+
+
+<div class="choice-list-wrapper">
+    <ul class="list-unstyled choice-list">
+        {% for item in 1 .. (words_count > 5 ? 5 : words_count) %}
+            <li class="choice">
+                <button class="btn btn-default">{{ loop.index }}</button>
+            </li>
+        {% endfor %}
+        <li class="choice dont-know"><button class="btn btn-secondary">{{ 'dictionary.view.exercise.dont_know'|trans }}</button></li>
+    </ul>
+    <div class="overlay" title="{{ 'dictionary.view.exercise.move_cursor_to_see_answers'|trans }}">
+    </div>
+</div>
+

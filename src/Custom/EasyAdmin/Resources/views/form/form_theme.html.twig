@@ -1,0 +1,82 @@
+{% extends "@EasyAdminBundle/Resources/views/form/bootstrap_3_horizontal_layout.html.twig" %}
+
+{% use "@CustomEasyAdminBundle/Resources/views/form/words_collection_theme.html.twig" %}
+
+
+{% block form_label_class %}
+    {% if 'collection' in form.parent.vars.block_prefixes %}
+        {{ 'hidden' }}
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock form_label_class %}
+
+{% block form_group_class %}
+    {% if 'collection' in form.parent.vars.block_prefixes %}
+        {{ block('collection_item_group_class') }}
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+
+{% endblock form_group_class %}
+
+{% block collection_item_group_class %}
+    {{ 'col-xs-10' }}
+{% endblock collection_item_group_class %}
+
+
+{% block collection_row %}
+    {{ block('form_row') }}
+
+    {% block collection_add_action_wrapper %}
+        {% if allow_add|default(false) %}
+            <div class="form-group">
+                <div class="{{ block('form_label_class') }}"></div>
+                <div class="{{ block('form_group_class') }}">
+                    <div class="form-group">
+                        <div class="text-right field-collection-action {{ block('collection_item_group_class') }}">
+                            {% block collection_add_action %}
+                                {% set js_add_item %}
+                                    $(function() {
+                                    if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
+
+                                    var collection = $('#{{ id }}');
+                                    // Use a counter to avoid having the same index more than once
+                                    var numItems = collection.data('count') || collection.children('div.form-group').length;
+
+                                    collection.prev('.collection-empty').remove();
+
+                                    var newItem = collection.attr('data-prototype')
+                                    .replace(/\>__name__label__\</g, '>' + numItems + '<')
+                                    .replace(/_{{ name }}___name__/g, '_{{ name }}_' + numItems)
+                                    .replace(/{{ name }}\]\[__name__\]/g, '{{ name }}][' + numItems + ']')
+                                    ;
+
+                                    // Increment the counter and store it in the collection
+                                    collection.data('count', ++numItems);
+
+                                    collection.append(newItem).trigger('easyadmin.collection.item-added');
+                                    });
+                                {% endset %}
+                                <a href="#" onclick="{{ js_add_item|raw }}" class="text-primary">
+                                    <i class="fa fa-plus-square"></i>
+                                    {{ (form|length == 0 ? 'action.add_new_item' : 'action.add_another_item')|trans({}, 'EasyAdminBundle') }}
+                                </a>
+                            {% endblock collection_add_action %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endblock collection_add_action_wrapper %}
+{% endblock collection_row %}
+
+
+
+
+
+
+
+
+
+

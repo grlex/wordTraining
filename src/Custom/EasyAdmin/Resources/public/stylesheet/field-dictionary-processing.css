@@ -1,0 +1,70 @@
+.dictionary-processing-widget{
+    width: 100%;
+    text-align: center;
+}
+.dictionary-processing-widget .progress{
+    border: 1px solid #aaa;
+    display: inline-block;
+    width: 15em;
+    vertical-align: middle;
+    margin: 0 !important;
+
+}
+.dictionary-processing-widget:not(.processing) .progress .progress-bar{
+    transition: none;
+}
+.dictionary-processing-widget .status{
+    width: 15em;
+    display: inline-block;
+    vertical-align: middle;
+}
+.dictionary-processing-widget .icon.processing,
+.dictionary-processing-widget .icon.done,
+.dictionary-processing-widget .icon.canceled{
+    display: none;
+}
+.dictionary-processing-widget.processing .icon.processing{
+    display: inline-block;
+    color: blue;
+    animation: rotateAnimation 1s linear infinite;
+}
+.dictionary-processing-widget.done .icon.done{
+    display: inline-block;
+    color: green;
+}
+.dictionary-processing-widget.canceled .icon.canceled{
+    display: inline-block;
+    color: red;
+}
+
+.dictionary-processing-widget .result.done,
+.dictionary-processing-widget .result.paused,
+.dictionary-processing-widget .result.processing{
+    display: none;
+}
+.dictionary-processing-widget.done .result.done{
+    display: inline-block;
+}
+.dictionary-processing-widget.paused .result.paused{
+    display: inline-block;
+}
+.dictionary-processing-widget.processing .result.processing{
+    display: inline-block;
+}
+.dictionary-processing-widget .pause,
+.dictionary-processing-widget .resume{
+    display: none;
+    margin-left: 1em;
+    color: gray;
+    font-size: 1.2em;
+}
+.dictionary-processing-widget .pause:hover,
+.dictionary-processing-widget .resume:hover{
+    color: maroon;
+}
+.dictionary-processing-widget.processing .pause{
+      display: inline;
+}
+.dictionary-processing-widget.paused .resume{
+    display: inline;
+}

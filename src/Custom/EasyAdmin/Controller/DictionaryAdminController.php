@@ -8,9 +8,11 @@
 namespace Custom\EasyAdmin\Controller;
 
 use AppBundle\Entity\Dictionary;
-use AppBundle\Entity\DictionaryLoading;
+use AppBundle\Entity\DictionaryProcessing;
 use AppBundle\Entity\Word;
-use AppBundle\WordLoader\Exception\AbortedException;
+use AppBundle\Entity\WordAttribute;
+use Doctrine\Bundle\DoctrineBundle\Registry;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\PessimisticLockException;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AdminController as BaseAdminController;
@@ -21,44 +23,58 @@ use Symfony\Component\Form\Extension\Core\Type;
 use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use AppBundle\WordLoader\Event\TryLoadEvent;
-use AppBundle\WordLoader\Event\WaitingEvent;
+use Custom\EasyAdmin\WordHandler\Event\AbortableEvent;
+use Custom\EasyAdmin\WordHandler\Event\TryLoadEvent;
+use Custom\EasyAdmin\WordHandler\Event\WaitingEvent;
+use Custom\EasyAdmin\WordHandler\Exception\AbortedException;
 
 class DictionaryAdminController extends BaseAdminController {
 
-    private $loadingInfo;
+    private $processingInfo;
     private $dictionary;
 
-    protected function prePersistDictionaryEntity($dictionary){
-        $loadingInfo = new DictionaryLoading();
-        $dictionary->setLoadingInfo($loadingInfo);
+    protected function initialize(Request $request)
+    {
+        $this->em = $this->getDoctrine()->getmanager();
+        return parent::initialize($request);
+    }
+
+    protected function newDictionaryAction(){
+        do{
+            try{
+                return $this->newAction();
+            }
+            catch(UniqueConstraintViolationException $ex){
+                usleep(rand(1000,1000000));
+                $this->em = $this->getDoctrine()->resetmanager();
+                continue;
+            }
+        }while(true);
+    }
+
+    protected function editDictionaryAction(){
+        do{
+            try{
+                return $this->editAction();
+            }
+            catch(UniqueConstraintViolationException $ex){
+                usleep(rand(1000,1000000));
+                $this->em = $this->getDoctrine()->resetmanager();
+                continue;
+            }
+        }while(true);
+    }
+
+    protected function prePersistDictionaryEntity(Dictionary $dictionary){
         $this->preSaveDictionaryEntity($dictionary);
     }
 
-    protected function preUpdateDictionaryEntity($dictionary){
+    protected function preUpdateDictionaryEntity(Dictionary $dictionary){
         $this->preSaveDictionaryEntity($dictionary);
     }
-
     protected function preSaveDictionaryEntity(Dictionary $dictionary){
-
-        $words = $dictionary->getWords();
-
-        foreach($words as &$word){
-            try {
-                $this->em->persist($word);
-                $this->em->flush($word);
-            }
-            catch(\Exception $ex){
-
-                $word = $this->em->getRepository(Word::class)->findBySpelling($word->getSpelling());
-            }
-        }
-        $word = null;
-
-        $loadingInfo = $dictionary->getLoadingInfo();
-        $loadingInfo->setTotal($words->count())
-            ->setLoaded(0)
-            ->setStatus(DictionaryLoading::STATUS_PENDING);
+        $dictionary->getProcessingInfo()->setProcessed(0);
+        $dictionary->getProcessingInfo()->setStatus(DictionaryProcessing::STATUS_PENDING);
     }
 
     /**
@@ -67,10 +83,10 @@ class DictionaryAdminController extends BaseAdminController {
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
-     * @Route("/dictionary/load/{id}")
+     * @Route("/dictionary/process/{id}")
      * @Method({"POST", "GET"})
      */
-    public  function loadDictionaryAction(Request $request, $id){
+    public  function processDictionaryAction(Request $request, $id){
         $this->request = $request;
         $this->em = $this->getDoctrine()->getManager();
         if($this->request->getSession()->isStarted()){
@@ -80,13 +96,13 @@ class DictionaryAdminController extends BaseAdminController {
         if($this->request->getMethod()!=Request::METHOD_POST) $action = 'status';
 
         $this->dictionary = $this->em->getRepository(Dictionary::class)
-            ->findWithLoadingInfo($id);
+            ->findWithProcessingInfo($id);
 
         if(is_null($this->dictionary))
             return new Response('dictionary is not found');
 
 
-        $this->loadingInfo = $this->dictionary->getLoadingInfo();
+        $this->processingInfo = $this->dictionary->getProcessingInfo();
         $furtherMethod = "";
 
 
@@ -95,26 +111,26 @@ class DictionaryAdminController extends BaseAdminController {
                 case "start":
                 case "resume":
                     try {
-                        $loadingInfo = $this->em->find(DictionaryLoading::class, $this->loadingInfo->getId(), LockMode::PESSIMISTIC_WRITE);
-                        if($loadingInfo->getStatus()==DictionaryLoading::STATUS_PENDING
-                           || $loadingInfo->getStatus()==DictionaryLoading::STATUS_PAUSED) {
-                            $furtherMethod = "startDictionaryLoading";
-                            $this->loadingInfo->setStatus(DictionaryLoading::STATUS_LOADING);
+                        $processingInfo = $this->em->find(DictionaryProcessing::class, $this->processingInfo->getId(), LockMode::PESSIMISTIC_WRITE);
+                        if($processingInfo->getStatus()==DictionaryProcessing::STATUS_PENDING
+                           || $processingInfo->getStatus()==DictionaryProcessing::STATUS_PAUSED) {
+                            $furtherMethod = "startDictionaryProcessing";
+                            $this->processingInfo->setStatus(DictionaryProcessing::STATUS_PROCESSING);
                         }
                         else{
-                            $furtherMethod = "showDictionaryLoading";
+                            $furtherMethod = "showDictionaryProcessing";
                         }
-                        $this->em->flush($loadingInfo);
+                        $this->em->flush($processingInfo);
                     }catch(PessimisticLockException $e){
-                        $furtherMethod = "showDictionaryLoading";
+                        $furtherMethod = "showDictionaryProcessing";
                     }
                     break;
 
                 case "status":
-                    $furtherMethod = "showDictionaryLoading";
+                    $furtherMethod = "showDictionaryProcessing";
                     break;
                 case "pause":
-                    $furtherMethod = "pauseDictionaryLoading";
+                    $furtherMethod = "pauseDictionaryProcessing";
                     break;
             }
 
@@ -122,61 +138,68 @@ class DictionaryAdminController extends BaseAdminController {
         if($furtherMethod){
             return call_user_func([ $this, $furtherMethod]);
         }
-        return new Response("unsupported dictionary loading action");
+        return new Response("unsupported dictionary processing action");
 
     }
 
-    function listenToWordLoaderEvents($event){
-        $loadingRepository = $this->em->getRepository(DictionaryLoading::class);
-        $loadingId = $this->loadingInfo->getId();
-        $status = $loadingRepository->getStatus($loadingId);
-        if ($status == DictionaryLoading::STATUS_PAUSING) {
+    function listenToWordHandlerEvents(AbortableEvent $event){
+        $processingRepository = $this->em->getRepository(DictionaryProcessing::class);
+        $processingId = $this->processingInfo->getId();
+        $status = $processingRepository->getStatus($processingId);
+        if ($status == DictionaryProcessing::STATUS_PAUSING) {
             $event->abort();
         }
     }
-    private function startDictionaryLoading(){
+    private function startDictionaryProcessing(){
 
-        $loadingRepository = $this->em->getRepository(DictionaryLoading::class);
-        $loadingId = $this->loadingInfo->getId();
+        $processingRepository = $this->em->getRepository(DictionaryProcessing::class);
+        $processingId = $this->processingInfo->getId();
         $dictionary = $this->dictionary;
         $words = $dictionary->getWords();
-        $wordLoader = $this->get('app.word_loader');
+        $wordHandler = $this->get('app.word_handler');
 
 
-        $this->get('event_dispatcher')->addListener(TryLoadEvent::NAME, [ $this, 'listenToWordLoaderEvents']);
-        $this->get('event_dispatcher')->addListener(WaitingEvent::NAME, [ $this, 'listenToWordLoaderEvents']);
+        $this->get('event_dispatcher')->addListener(TryLoadEvent::NAME, [ $this, 'listenToWordHandlerEvents']);
+        $this->get('event_dispatcher')->addListener(WaitingEvent::NAME, [ $this, 'listenToWordHandlerEvents']);
 
 
         for($i=0; $i< $words->count(); $i++){
 
             $word = $words[$i];
             try {
-                $wordLoader->loadWord($word);
-                $loadingRepository->updateLoaded($loadingId, $i + 1);
+
+                $wordHandler->handleWordAttributes($word);
+                $processingRepository->updateProcessed($processingId, $i + 1);
             }
             catch(AbortedException $ex){
-                // only if aborted
-                $loadingRepository->setStatus($loadingId, DictionaryLoading::STATUS_PAUSED);
+                $processingRepository->setStatus($processingId, DictionaryProcessing::STATUS_PAUSED);
                 return new Response('paused!');
             }
+            catch(\Exception $ex){
+                $processingRepository->setStatus($processingId, DictionaryProcessing::STATUS_PAUSED);
+                $message = $ex->getMessage(); // dev environment
+                return new Response($message);
+            }
+
         }
 
-        $loadingRepository->setStatus($loadingId, DictionaryLoading::STATUS_DONE);
-        return new Response('done!');
+        //$processingRepository->updateProcessed($processingId, $words->count());
+        $processingRepository->setStatus($processingId, DictionaryProcessing::STATUS_DONE);
+        return new Response('done111!');
     }
-    private function showDictionaryLoading(){
+    private function showDictionaryProcessing(){
         return new JsonResponse(array(
-            'loaded'=> $this->loadingInfo->getLoaded(),
-            'total'=> $this->loadingInfo->getTotal(),
-            'status'=> $this->loadingInfo->getStatus()
+            'processed'=> $this->processingInfo->getProcessed(),
+            'total'=> $this->processingInfo->getTotal(),
+            'status'=> $this->processingInfo->getStatus()
         ));
     }
-    private function pauseDictionaryLoading(){
-        $loadingRepository = $this->em->getRepository(DictionaryLoading::class);
-        $loadingId = $this->loadingInfo->getId();
-        $status = $loadingRepository->getStatus($loadingId);
-        if($status == DictionaryLoading::STATUS_LOADING) {
-            $loadingRepository->setStatus($loadingId, DictionaryLoading::STATUS_PAUSING);
+    private function pauseDictionaryProcessing(){
+        $processingRepository = $this->em->getRepository(DictionaryProcessing::class);
+        $processingId = $this->processingInfo->getId();
+        $status = $processingRepository->getStatus($processingId);
+        if($status == DictionaryProcessing::STATUS_PROCESSING) {
+            $processingRepository->setStatus($processingId, DictionaryProcessing::STATUS_PAUSING);
             return new Response('pausing...');
         }
         return new Response('pausing is not allowed now');

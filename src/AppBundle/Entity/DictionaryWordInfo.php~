@@ -1,0 +1,346 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Alexey Grigoriev
+ * Date: 27.12.2017
+ * Time: 17:23
+ */
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Event\LifecycleEventArgs;
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Class Package
+ * @package AppBundle\Entity
+ * @ORM\Entity(repositoryClass="DictionaryWordInfoRepository")
+ */
+class DictionaryWordInfo
+{
+    const PRIORITY_HIGH = 1;
+    const PRIORITY_NORMAL = 2;
+    const PRIORITY_LOW = 3;
+    /**
+     * @var integer
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     * @ORM\Column(type="integer")
+     */
+    private $id;
+
+    /**
+     * @var Word
+     * @ORM\ManyToOne(targetEntity="Word")
+     */
+    private $word;
+
+    /**
+     * @var DictionaryWordInfo
+     * ORM\OneToOne(targetEntity="DictionaryWordInfo", mappedBy="previous")
+     */
+    private $next;
+
+    /**
+     * @var DictionaryWordInfo
+     * ORM\OneToOne(targetEntity="DictionaryWordInfo", inversedBy="next")
+     */
+    private $previous;
+
+    /**
+     * @var Dictionary
+     * @ORM\ManyToOne(targetEntity="Dictionary", inversedBy="words")
+     */
+    private $dictionary;
+
+    /**
+     * @var Word
+     * @ORM\ManyToMany(targetEntity="Package", inversedBy="words")
+     */
+    private $packages;
+
+    /**
+     * @var bool
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $learned;
+
+    /**
+     * @var int
+     * @ORM\Column(type="smallint", nullable=true)
+     */
+    private $priority;
+
+    /**
+     * @var int
+     * @ORM\Column(type="integer", options={"unsigned"=true})
+     */
+    private $orderPos;
+
+    /**
+     * @var Translation[]
+     * @ORM\ManyToMany(targetEntity="Translation")
+     */
+    private $primaryTranslations;
+
+
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->packages = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->primaryTranslations = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+
+    /* ===================== ============= */
+
+    /**
+     * Get id
+     *
+     * @return integer
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set learned
+     *
+     * @param boolean $learned
+     *
+     * @return DictionaryWordInfo
+     */
+    public function setLearned($learned)
+    {
+        $this->learned = $learned;
+
+        return $this;
+    }
+
+    /**
+     * Get learned
+     *
+     * @return boolean
+     */
+    public function getLearned()
+    {
+        return $this->learned;
+    }
+
+    /**
+     * Set priority
+     *
+     * @param integer $priority
+     *
+     * @return DictionaryWordInfo
+     */
+    public function setPriority($priority)
+    {
+        $this->priority = $priority;
+
+        return $this;
+    }
+
+    /**
+     * Get priority
+     *
+     * @return integer
+     */
+    public function getPriority()
+    {
+        return $this->priority;
+    }
+
+    /**
+     * Set word
+     *
+     * @param \AppBundle\Entity\Word $word
+     *
+     * @return DictionaryWordInfo
+     */
+    public function setWord(\AppBundle\Entity\Word $word = null)
+    {
+        $this->word = $word;
+
+        return $this;
+    }
+
+    /**
+     * Get word
+     *
+     * @return \AppBundle\Entity\Word
+     */
+    public function getWord()
+    {
+        return $this->word;
+    }
+
+    /**
+     * Set dictionary
+     *
+     * @param \AppBundle\Entity\Dictionary $dictionary
+     *
+     * @return DictionaryWordInfo
+     */
+    public function setDictionary(\AppBundle\Entity\Dictionary $dictionary = null)
+    {
+        $this->dictionary = $dictionary;
+
+        return $this;
+    }
+
+    /**
+     * Get dictionary
+     *
+     * @return \AppBundle\Entity\Dictionary
+     */
+    public function getDictionary()
+    {
+        return $this->dictionary;
+    }
+
+    /**
+     * Set next
+     *
+     * @param \AppBundle\Entity\DictionaryWordInfo $next
+     *
+     * @return DictionaryWordInfo
+     */
+    public function setNext(\AppBundle\Entity\DictionaryWordInfo $next = null)
+    {
+        $this->next = $next;
+
+        return $this;
+    }
+
+    /**
+     * Get next
+     *
+     * @return \AppBundle\Entity\DictionaryWordInfo
+     */
+    public function getNext()
+    {
+        return $this->next;
+    }
+
+    /**
+     * Set previous
+     *
+     * @param \AppBundle\Entity\DictionaryWordInfo $previous
+     *
+     * @return DictionaryWordInfo
+     */
+    public function setPrevious(\AppBundle\Entity\DictionaryWordInfo $previous = null)
+    {
+        $this->previous = $previous;
+
+        return $this;
+    }
+
+    /**
+     * Get previous
+     *
+     * @return \AppBundle\Entity\DictionaryWordInfo
+     */
+    public function getPrevious()
+    {
+        return $this->previous;
+    }
+
+    /**
+     * Add package
+     *
+     * @param \AppBundle\Entity\Package $package
+     *
+     * @return DictionaryWordInfo
+     */
+    public function addPackage(\AppBundle\Entity\Package $package)
+    {
+        $this->packages[] = $package;
+
+        return $this;
+    }
+
+    /**
+     * Remove package
+     *
+     * @param \AppBundle\Entity\Package $package
+     */
+    public function removePackage(\AppBundle\Entity\Package $package)
+    {
+        $this->packages->removeElement($package);
+    }
+
+    /**
+     * Get packages
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getPackages()
+    {
+        return $this->packages;
+    }
+
+    /**
+     * Add primaryTranslation
+     *
+     * @param \AppBundle\Entity\Translation $primaryTranslation
+     *
+     * @return DictionaryWordInfo
+     */
+    public function addPrimaryTranslation(\AppBundle\Entity\Translation $primaryTranslation)
+    {
+        $this->primaryTranslations[] = $primaryTranslation;
+
+        return $this;
+    }
+
+    /**
+     * Remove primaryTranslation
+     *
+     * @param \AppBundle\Entity\Translation $primaryTranslation
+     */
+    public function removePrimaryTranslation(\AppBundle\Entity\Translation $primaryTranslation)
+    {
+        $this->primaryTranslations->removeElement($primaryTranslation);
+    }
+
+    /**
+     * Get primaryTranslations
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getPrimaryTranslations()
+    {
+        return $this->primaryTranslations;
+    }
+    
+
+    /**
+     * Set order
+     *
+     * @param integer $order
+     *
+     * @return DictionaryWordInfo
+     */
+    public function setOrder($order)
+    {
+        $this->order = $order;
+
+        return $this;
+    }
+
+    /**
+     * Get order
+     *
+     * @return integer
+     */
+    public function getOrder()
+    {
+        return $this->order;
+    }
+}

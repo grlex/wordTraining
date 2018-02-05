@@ -1,0 +1,100 @@
+action.clear_items: Clear
+action.new: Add
+
+words_collection.import_from_file: Import from file
+words_collection.import_from_text: Import from text
+words_collection.new_word_paceholder: Enter word
+words_collection.filter: filter...
+words_collection.duplicate: Word is already in the list
+words_collection.modal.text_import.accept: Import
+words_collection.modal.accept: Accept
+words_collection.modal.cancel: Cancel
+
+words_collection.word.spelling: Spelling
+words_collection.word.translation: Translation
+words_collection.word.transcription: Transcription
+words_collection.word.pronounce: Pronounce
+words_collection.word.autoload: Autoload field
+words_collection.word.auto: Auto
+
+
+dictionary_processing:
+  pause: Pause
+  paused: Paused
+  resume: Resume
+  done: Done
+  processing: Processing
+
+
+word_pronounce:
+  type:
+    unavailable: ---
+    no: No
+    initial: Initial
+    initial_loading: (Loading)
+    file: File
+    link: Link (URL)
+    microphone: Microphone
+    auto: Auto
+  title: Pronounce
+  microphone:
+    record: Record
+    pause: Pause
+    resume: Resume
+    stop: Stop
+    play: Play
+
+  messages:
+    microphone_record: Record pronounce audio on microphone
+    enter_audio_url: Enter URL to the pronounce audio file
+    audio_url_invalid: Audio URL is invalid
+
+
+menu:
+  go-public: Public area
+  users: Users
+  dictionaries: Dictionaries
+  words: Words
+  settings: Settings
+
+word_training_site_name: Word training
+
+settings:
+  title: Settings
+  under_maintenance: Under maintenance
+  show_background_images: Show the selected images as backgrounds of the public area pages
+  background_images: Background images
+  form.save: Save
+  backgrounds:
+    remove: Remove
+    recover: Recover
+    repeat: Repeating
+    cover: Cover
+    active: Active
+    inactive: Inactive
+    action_deactivate: Deactivate all
+    action_clear: Remove all
+
+#ID: ID
+# User
+#User: Пользователь
+#Users: Пользователи
+#Username: Логин
+#Roles: Роли
+#Enabled: Активный
+#'Last login': Последний вход
+#Dictionary
+#Dictionary: Словарь
+#Dictionaries: Словари
+#Name: Название
+#'Processing info': Обработка
+#Word
+#Word: Слово
+#Words: Слова
+#Spelling: Написание
+#Transcription: Транскрипция
+#Pronounce: Озвучка
+#Translation: Перевод
+
+
+

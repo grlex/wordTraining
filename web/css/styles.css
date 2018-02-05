@@ -9,6 +9,7 @@ body{
     position: relative;
     background: #F5F5F5;
     font: 14px/1.5 sans-serif;
+
 }
 body > footer{
     position: absolute;
@@ -20,3 +21,489 @@ body > main{
     position: relative;
     padding-bottom: 5em;
 }
+
+.background{
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-image:
+    url(/images/background-7.jpg);
+
+}
+
+main > .container > .row{
+    background: rgba(255,255,255, .5);
+    border-radius: 5px;
+}
+
+
+
+/** common **/
+
+
+
+.list{
+    margin-top: 2em;
+}
+
+
+.status .icon,
+.status.ajax-wait .icon.icon.icon:not(.wait){
+    display: none;
+}
+.status.ajax-ok .icon.done,
+.status.ajax-fail .icon.fail,
+.status.ajax-wait .icon.wait{
+    display: inline-block;
+    vertical-align: middle;
+}
+.status.ajax-wait .icon.wait{
+    animation: rotateAnimation .8s linear infinite;
+    color: blue;
+}
+.status.ajax-ok{
+    color: green;
+}
+.status.ajax-fail{
+    color: red;
+}
+
+
+
+
+/** dictionary list view **/
+
+.dictionaries-list{
+    padding: 1em;
+    background: white;
+    border-radius: .2em;
+}
+
+/** dictionary views with controls **/
+
+
+
+.dictionary-view > div > .row{
+    padding: 1em 0;
+}
+
+
+
+.dictionary-view .attributes-visibility-control ul > li > a{
+    padding-right: 1em;
+}
+
+.dictionary-view .attributes-visibility-control li > a > span {
+    display:none;
+    padding: 0.2em 0;
+}
+.dictionary-view .attributes-visibility-control:not(.spelling)  li.spelling > a > .attribute-hidden,
+.dictionary-view .attributes-visibility-control:not(.transcription)  li.transcription > a > .attribute-hidden,
+.dictionary-view .attributes-visibility-control:not(.translation)  li.translation > a > .attribute-hidden,
+.dictionary-view .attributes-visibility-control.spelling  li.spelling > a > .attribute-visible,
+.dictionary-view .attributes-visibility-control.transcription  li.transcription > a > .attribute-visible,
+.dictionary-view .attributes-visibility-control.translation  li.translation > a > .attribute-visible{
+    display: inline-block;
+}
+
+.dictionary-view .package-control button.add-new span{
+    padding: .2em;
+    display: inline-block;
+}
+.dictionary-view .package-control ul.dropdown-menu > li > a.name{
+    padding-right: 3em;
+}
+.dictionary-view .package-control ul.dropdown-menu > li.package-all-global a.name,
+.dictionary-view .package-control ul.dropdown-menu > li.package-all-local a.name{
+    font-weight: bold;
+}
+.dictionary-view .package-control ul.dropdown-menu > li > a.remove{
+    position: absolute;
+    right: 0;
+    padding: .2em 1em;
+}
+.dictionary-view .package-control ul.dropdown-menu > li > a.remove .status.ready:not(.ajax-fail) .icon.ready{
+    display: inline;
+    color: #b50000;
+}
+.dictionary-view .package-control ul.dropdown-menu > li > a.remove:hover + a.name{
+    background: #ffecec;
+    text-decoration: line-through;
+    color: #888;
+}
+
+
+.dictionary-view .modals .new-package form .error{
+    padding-left: 1em;
+    color: red;
+}
+.dictionary-view .modals .new-package form .error + input{
+    border-color: red;
+    background: #ffecec;
+}
+
+
+.dictionary-view ul.words-list{
+    margin-top: 2em;
+    padding: 0;
+    box-shadow: 0 0 1em 0 gray;
+    border-radius: .4em;
+    overflow: hidden;
+}
+
+.dictionary-view ul.words-list .headers{
+    padding: 1em 0;
+    background: white;
+    font-weight: bold;
+}
+
+.dictionary-view ul.words-list .headers .header span{
+    display: inline-block;
+    padding-left: 1em;
+}
+.dictionary-view ul.words-list .headers .header.spelling span,
+.dictionary-view ul.words-list .headers .header.translation span{
+    padding-left: 3em;
+
+}
+.dictionary-view ul.words-list .headers .header.pronounce span{
+    padding: 0;
+    margin-left: -2em;
+}
+
+.dictionary-view ul.words-list li.words-not-found{
+    padding: 1em;
+}
+
+.dictionary-view ul.words-list li.word {
+    background: #fff;
+    min-height: 3.5em;
+    position: relative;
+
+}
+.dictionary-view ul.words-list li.word:nth-child(even) {
+    background: #f3f3f3;
+}
+.dictionary-view .words-list .word .attribute:not(.pronounce){
+    position: relative;
+}
+
+.dictionary-view .words-list .word .attribute.pronounce{
+    height: 3.5em;
+    padding-top: .7em;
+    padding-bottom: .7em;
+}
+
+.dictionary-view .words-list .word .attribute.spelling .checker{
+    position: absolute;
+    height: 3.5em;
+    width: 3em;
+    text-align: center;
+    left: 0;
+    top: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+.dictionary-view .words-list .word .attribute.spelling .checker.disabled{
+    color: #ccc;
+    cursor: default;
+ }
+
+.dictionary-view .words-list .word .attribute.spelling .checker .icon,
+.dictionary-view .words-list .word .attribute.spelling .checker.ajax-wait .icon.icon.icon:not(.wait){
+    display: none;
+}
+.dictionary-view .words-list .word .attribute.spelling .checker.checked .icon.checked,
+.dictionary-view .words-list .word .attribute.spelling .checker:not(.checked) .icon.unchecked,
+.dictionary-view .words-list .word .attribute.spelling .checker.ajax-wait .icon.wait{
+    display: inline-block;
+    vertical-align: middle;
+}
+.dictionary-view .words-list .word .attribute.spelling .checker.ajax-wait .icon.wait{
+    animation: rotateAnimation .8s linear infinite;
+    color: blue;
+}
+.dictionary-view .words-list .word .attribute.spelling .checker.ajax-ok{
+    color: green;
+}
+.dictionary-view .words-list .word .attribute.spelling .checker.ajax-fail{
+    color: red;
+}
+.dictionary-view .words-list .word .attribute.spelling .checker.ajax-ok .icon,
+.dictionary-view .words-list .word .attribute.spelling .checker.ajax-fail .icon{
+    font-size: 1.2em;
+}
+
+
+.dictionary-view .words-list .word .attribute.spelling a{
+    display: inline-block;
+    margin-left: 1em;
+    padding-left: 1em;
+    position: relative;
+    cursor: pointer;
+}
+
+.dictionary-view .words-list .word .attribute .spy{
+    position: absolute;
+    padding: 1.2em 1em 1.2em 0;
+    bottom: 0;
+    top: 0;
+    left: 1em;
+}
+.dictionary-view .words-list .word .attribute .text{
+    display: inline-block;
+    padding: 1em 0;
+    margin-left: 2em;
+}
+
+
+.dictionary-view .words-list .word .spy:hover + .text.text.text{
+    opacity: 1;
+}
+.dictionary-view .words-list:not(.spelling) .word .spelling .text,
+.dictionary-view .words-list:not(.transcription) .word .transcription .text,
+.dictionary-view .words-list:not(.translation) .word .translation .text,
+.dictionary-view .words-list.spelling .word .spelling .spy,
+.dictionary-view .words-list.transcription .word .transcription .spy,
+.dictionary-view .words-list.translation .word .translation .spy{
+    opacity: 0;
+    transition: opacity .5s;
+}
+
+.dictionary-view .exercises-control ul li a .text {
+    padding-right: 4em;
+}
+
+.dictionary-view .words-order-control ul li a .text{
+    padding-right: 3em;
+}
+
+.dictionary-view .words-order-control ul li a.selected{
+    background: #eee;
+}
+
+
+.dictionary-view .exercise-widget{
+    position: relative;
+    max-width: 36em;
+    margin: 0 auto;
+}
+.dictionary-view .exercise-widget .exercise-question,
+.dictionary-view .exercise-widget .exercise-answer,
+.dictionary-view .exercise-widget .exercise-result{
+    display: none;
+}
+.dictionary-view .exercise-question,
+.dictionary-view .exercise-result{
+    position: relative;
+    padding: 1em;
+    border-radius: .5em;
+    background: #ffffff;
+    box-shadow: 0 0 1em 0 gray;
+}
+.dictionary-view .exercise-question{
+    position: relative;
+    padding: 4em 2em 4em;
+    height: 16em;
+    overflow: hidden;
+}
+
+.dictionary-view .exercise-question .question-header{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 1em;
+}
+
+.dictionary-view .exercise-question .question-body,
+.dictionary-view .exercise-question .question-finish{
+    text-align: center;
+    display: inline-block;
+    font-size: 2em;
+    width: 100%;
+    max-height: 4em;
+    vertical-align: middle;
+    overflow: auto;
+    z-index: 2;
+    position: relative;
+}
+
+.dictionary-view .exercise-question .question-footer{
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2em;
+    width: 100%;
+    padding: 0 1em;
+    font-size: 1em;
+}
+
+
+.dictionary-view .exercise-question .question-finish button.finish{
+    font-size: 0.7em;
+}
+
+
+
+.dictionary-view .exercise-question  .exercise-nav-buttons{
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+
+}
+
+.dictionary-view .exercise-question  .exercise-nav-buttons .nav-btn {
+    position: absolute;
+    height: 100%;
+    top: 0;
+    width: 2em;
+    text-align: center;
+    cursor: pointer;
+    color: #aaa;
+}
+
+.dictionary-view .exercise-question  .exercise-nav-buttons .nav-btn.prev {
+    left: 0;
+}
+.dictionary-view .exercise-question  .exercise-nav-buttons .nav-btn.next {
+    right: 0;
+}
+.dictionary-view .exercise-question  .exercise-nav-buttons .nav-btn:hover{
+    color: #444;
+}
+
+.dictionary-view .exercise-answer{
+    padding-top: 2em;
+    text-align: center;
+}
+
+.dictionary-view .exercise-answer .choice-list-wrapper{
+    position: relative
+}
+.dictionary-view .exercise-answer .choice-list-wrapper .overlay{
+    display: none;
+    position: absolute;
+    top: .2em;
+    bottom: .2em;
+    width: 100%;
+    background: #f5f5f5;
+    border: 1px solid silver;
+    border-radius: .4em;
+    text-align: center;
+}
+.dictionary-view .exercise-answer .choice-list-wrapper .overlay::before{
+    display: inline-block;
+    height: 100%;
+    width: 40%;
+    background-image: url(/images/mouse-move.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    content: '';
+}
+
+.dictionary-view .exercise-answer .choice-list li{
+    padding: .2em 0;
+    position: relative
+}
+
+.dictionary-view .exercise-answer .choice-list .choice button{
+    width: 100%;
+    display: block;
+    text-align: left;
+    overflow: hidden;
+    outline: none;
+}
+
+.dictionary-view .exercise-answer .choice-list .choice button.btn-default:hover,
+.dictionary-view .exercise-answer .choice-list .choice button.btn-default:focus{
+    background: white;
+}
+
+
+.dictionary-view .exercise-answer .choice-list .choice.current button.btn-default:not(.disabled){
+    background: #eee;
+}
+
+
+.dictionary-view .exercise-answer .written-answer:not(.has-success) .icon.correct,
+.dictionary-view .exercise-answer .written-answer:not(.has-error)  .icon.incorrect,
+.dictionary-view .exercise-answer .written-answer.has-success .icon.near-correct,
+.dictionary-view .exercise-answer .written-answer.has-error  .icon.near-correct{
+    display: none;
+
+}
+
+.dictionary-view .exercise-result{
+    position: relative;
+    text-align: center;
+}
+.dictionary-view .exercise-result .percentage{
+    padding: .5em 0;
+    font-size: 2em;
+}
+
+.dictionary-view .exercise-result .score{
+    padding-top: 1em;
+}
+.dictionary-view .exercise-result .score .score-stars .star .icon {
+    font-size: 1.5em;
+    display: none;
+    color: #e1a104;
+}
+.dictionary-view .exercise-result .score .score-stars .star.empty .icon.empty {
+    color: #ddd;
+}
+
+
+.dictionary-view .exercise-result .score .score-stars .star.empty .icon.empty,
+.dictionary-view .exercise-result .score .score-stars .star.empty-colored .icon.empty,
+.dictionary-view .exercise-result .score .score-stars .star.half .icon.half,
+.dictionary-view .exercise-result .score .score-stars .star.filled .icon.filled{
+    display: inline-block;
+}
+.dictionary-view .exercise-result .counters .counter{
+    max-width: 15em;
+    margin: 0 auto;
+    position: relative;
+    padding-right: 4em;
+    text-align: left;
+}
+.dictionary-view .exercise-result .counters .counter .count{
+    position: absolute;
+    right: 0;
+}
+
+
+.dictionary-view .exercise-question .question-footer .pronounce-transcription-hint .viewer{
+    cursor: pointer;
+    color: #ccc;
+}
+.dictionary-view .exercise-question .question-footer .pronounce-transcription-hint .viewer::before{
+    padding-right: .3em;
+}
+
+.dictionary-view .exercise-question .question-footer .pronounce-transcription-hint .viewer + .text{
+    opacity: 0;
+}
+.dictionary-view .exercise-question .question-footer .pronounce-transcription-hint .viewer + .text::before{
+    content: '[ '
+}
+.dictionary-view .exercise-question .question-footer .pronounce-transcription-hint .viewer + .text::after{
+    content: ' ]'
+}
+.dictionary-view .exercise-question .question-footer .pronounce-transcription-hint .viewer:hover + .text{
+    transition: opacity 0s ease-out .5s;
+    opacity: 1;
+}
+.dictionary-view .exercise-question .question-footer .pronounce-transcription-hint .viewer:hover{
+    transition: color 1s;
+    color: #000;
+}
+

@@ -1,0 +1,114 @@
+{% extends "@EasyAdminBundle/Resources/views/form/bootstrap_3_layout.html.twig" %}
+
+{% block collection_row -%}
+    {{ block('form_row') }}
+{%- endblock collection_row %}
+
+{%- block collection_widget -%}
+    {% if value is iterable and value is empty or form.vars.prototype is defined %}
+        {% set classAttr = attr.class|default('') ~ ' backgrounds-collection' %}
+        {% set attr = attr|merge({'data-empty-collection': '', 'class': classAttr }) %}
+    {% endif %}
+    {% if prototype is defined %}
+        {%- set attr = attr|merge({'data-prototype': form_row(prototype) }) -%}
+    {% endif %}
+
+    <div {{ block('widget_container_attributes') }}>
+        {%- if form is rootform -%}
+            {{ form_errors(form) }}
+        {%- endif -%}
+        <div class="actions">
+            {{- block ('collection_add_action')-}}
+            {{- block ('collection_deactivate_action')-}}
+            {{- block ('collection_clear_action')-}}
+        </div>
+        {{- block('settings_background_images') -}}
+    </div>
+{%- endblock collection_widget -%}
+
+
+{% block collection_add_action %}
+        <a href="#" class="text-primary add-action ">
+            <i class="fa fa-plus-square"></i>
+            {{ (form|length == 0 ? 'action.add_new_item' : 'action.add_another_item')|trans({}, 'EasyAdminBundle') }}
+        </a>
+{% endblock collection_add_action %}
+
+{% block collection_deactivate_action %}
+        <a href="#" class="text-primary deactivate-action">
+            <i class="fa fa-eye-slash"></i>
+            {{ 'settings.backgrounds.action_deactivate'|trans }}
+        </a>
+{% endblock collection_deactivate_action %}
+
+{% block collection_clear_action %}
+        <a href="#" class="text-primary clear-action">
+            <i class="fa fa-close"></i>
+            {{ 'settings.backgrounds.action_clear'|trans }}
+        </a>
+{% endblock collection_clear_action %}
+
+{%- block settings_background_images -%}
+    {%- set imageWidgetProto -%}
+    {%- spaceless -%}
+        <div class="background-image __class__">
+            <input class="id" type="hidden" name="__id_name__" value="__id_value__"/>
+            <a class="image" href="__orig_uri__">
+                <img src="__small_uri__"/>
+            </a>
+            <span class="removing control">
+                <input type="checkbox" class="checker" name="__remove_name__[__i__]" value="__i__"/>
+                <span class="icon remove fa fa-close" title="{{ 'settings.backgrounds.remove'|trans }}"></span>
+                <span class="icon recover fa fa-undo" title="{{ 'settings.backgrounds.recover'|trans }}"></span>
+            </span>
+            <span class="repeating control">
+                <input type="checkbox" class="checker" name="__repeat_name__[__i__]" value="__i__"/>
+                <span class="icon repeat fa fa-th-large" title="{{ 'settings.backgrounds.repeat'|trans }}"></span>
+                <span class="icon cover fa fa-square" title="{{ 'settings.backgrounds.cover'|trans }}"></span>
+            </span>
+            <span class="activity control">
+                <input type="checkbox" class="checker" name="__inactive_name__[__i__]" value="__i__"/>
+                <span class="icon active fa fa-eye" title="{{ 'settings.backgrounds.active'|trans }}"></span>
+                <span class="icon inactive fa fa-eye-slash" title="{{ 'settings.backgrounds.inactive'|trans }}"></span>
+            </span>
+        </div>
+    {%- endspaceless -%}
+    {%- endset -%}
+    <div class="processing-strap">
+        <span class="strap"></span>
+    </div>
+    <div class="background-images" data-prototype="{{ imageWidgetProto|escape('html_attr') }}">
+        {% for child in form %}
+            {% with {form: child} %}
+                {{ block('settings_background_image_row') }}
+            {% endwith %}
+        {% endfor %}
+    </div>
+{%- endblock settings_background_images -%}
+
+{% block settings_background_image_row %}
+        {% if form.id.vars.value == ''  %}
+            {# prototype #}
+            <input class="file"
+                   multiple
+                   accept="image/*"
+                   type="file"
+                   name="{{ form.file.vars.full_name }}"
+                   data-remove-field="{{ form.remove.vars.full_name }}"
+                   data-repeat-field="{{ form.repeat.vars.full_name }}"
+                   data-inactive-field="{{ form.inactive.vars.full_name }}"/>
+        {% else %}
+            {{ imageWidgetProto|replace({
+                '__id_name__': form.id.vars.full_name,
+                '__id_value__': form.id.vars.value,
+                '__remove_name__': form.remove.vars.full_name,
+                '__repeat_name__': form.repeat.vars.full_name,
+                '__inactive_name__': form.inactive.vars.full_name,
+                '__orig_uri__': '/images/backgrounds/orig.' ~ form.filename.vars.value,
+                '__small_uri__': '/images/backgrounds/small.' ~ form.filename.vars.value,
+                '__i__': 'single',
+                '__class__': (form.repeat.vars.value=='1' ? 'repeated ' : '')  ~ (form.inactive.vars.value=='1' ? 'inactive' : '' )
+            })|raw }}
+        {% endif %}
+
+{% endblock  settings_background_image_row %}

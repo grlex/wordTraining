@@ -20,3 +20,4 @@ parameters:
     # additional
     word_loader.request_interval: ~
     words_sound_web_dir: ~
+    yandex_translator_api_key: ~

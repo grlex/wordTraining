@@ -1,0 +1,10 @@
+<div class="word-translation-widget">
+    <span>
+        {% if value|length > 40 %}
+            {{  value|slice(41,1) == ',' ? value|slice(0,40) : value|slice(0,40)|split(',', -1)|join(',') }}
+            {{ ', ...' }}
+        {% else %}
+            {{ value }}
+        {% endif %}
+    </span>
+</div>

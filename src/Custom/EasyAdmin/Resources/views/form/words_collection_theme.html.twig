@@ -1,9 +1,6 @@
-{% trans_default_domain 'CustomEasyAdminBundle' %}
 
 
 {% block words_collection_row -%}
-    {# используем form_row блок вместо collection_row , чтобы перенести кнопку добавления нового элемента в заголовок
-     ( в collection_row кнопка добавления выводится в конце списка элементов ) #}
     {{ block('form_row') }}
 {%- endblock words_collection_row %}
 
@@ -33,8 +30,121 @@
         {{ block('words_collection_file') }}
         {{ block('words_collection_text') }}
         {{ block('words_collection_new_word_container') }}
+        {{ block('words_collection_modals') }}
     </div>
 {% endblock words_collection_header %}
+
+{% block words_collection_modals %}
+
+    <div class="text-import modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">
+                        {{ 'words_collection.import_from_text'|trans }}
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <textarea></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default cancel" data-dismiss="modal">
+                        {{ 'words_collection.modal.cancel'|trans }}
+                    </button>
+                    <button type="button" class="btn btn-primary accept">
+                        {{ 'words_collection.modal.text_import.accept'|trans }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="microphone-pronounce modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">
+                        {{ 'word_pronounce.messages.microphone_record'|trans }}
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <span class="icon fa fa-microphone"></span>
+                    <div class="controls opened">
+                        <span class="record control fa fa-circle" title="{{ 'word_pronounce.microphone.record'|trans }}"></span>
+                        <span class="pause control fa fa-pause-circle" title="{{ 'word_pronounce.microphone.pause'|trans }}"></span>
+                        <span class="resume control fa fa-play-circle" title="{{ 'word_pronounce.microphone.resume'|trans }}"></span>
+                        <span class="stop control fa fa-stop" title="{{ 'word_pronounce.microphone.stop'|trans }}"></span>
+                        <span class="play control fa fa-play" title="{{ 'word_pronounce.microphone.play'|trans }}"></span>
+                    </div>
+                    <span class="time">0:0:0.0</span>
+                    <audio></audio>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default cancel" data-dismiss="modal">
+                        {{ 'words_collection.modal.cancel'|trans }}
+                    </button>
+                    <button type="button" class="btn btn-primary accept">
+                        {{ 'words_collection.modal.accept'|trans }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="url-pronounce modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">
+                        {{ 'word_pronounce.messages.enter_audio_url'|trans }}
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <textarea></textarea>
+                    <span class="invalid-message">
+                        {{ 'word_pronounce.messages.audio_url_invalid'|trans }}
+                    </span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default cancel" data-dismiss="modal">
+                        {{ 'words_collection.modal.cancel'|trans }}
+                    </button>
+                    <button type="button" class="btn btn-primary accept">
+                        {{ 'words_collection.modal.accept'|trans }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="audio-upload modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">
+                        {{ 'words_collection.modal.audio_upload'|trans }}
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 0;">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default cancel" data-dismiss="modal">
+                        {{ 'words_collection.modal.cancel'|trans }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock words_collection_modals %}
 
 
 {% block words_collection_new_word_container %}
@@ -63,24 +173,7 @@
 
 {% block words_collection_text %}
     <div class="words-text words-import">
-        <div class="modal fade" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title">{{ 'words_collection.import_from_text'|trans }}</h4>
-                    </div>
-                    <div class="modal-body">
-                        <textarea></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default cancel" data-dismiss="modal">{{ 'words_collection.text_import_cancel'|trans }}</button>
-                        <button type="button" class="btn btn-primary accept">{{ 'words_collection.text_import_accept'|trans }}</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <button type="button" onclick="$(this).prev().modal('show')">
+        <button type="button">
             {{ 'words_collection.import_from_text'|trans }}
             <span class="icon wait fa fa-spinner"></span>
             <span class="icon done fa fa-check"></span>
@@ -96,7 +189,7 @@
         <span class="add-word-action">
             <a href="#" class="text-primary">
                 <i class="fa fa-plus-square"></i>
-                {{ 'action.add_new_word'|trans({}, 'CustomEasyAdminBundle') }}
+                {{ 'action.add_new_item'|trans({}, 'EasyAdminBundle') }}
             </a>
         </span>
     {% endif %}
@@ -107,7 +200,7 @@
         <span class="clear-words-action">
             <a href="#" class="text-primary">
                 <i class="fa fa-eraser"></i>
-                {{ 'action.clear_words'|trans({}, 'CustomEasyAdminBundle') }}
+                {{ 'action.clear_items'|trans }}
             </a>
         </span>
     {% endif %}
@@ -118,7 +211,7 @@
         <span class="remove-word-action">
             <a href="#"  class="text-danger">
                 <i class="fa fa-remove"></i>
-                {#{ 'action.remove_word'|trans({}, 'CustomEasyAdminBundle') }#}
+                {{ 'action.remove_item'|trans({}, 'EasyAdminBundle') }}
             </a>
         </span>
     {% endif %}
@@ -139,12 +232,124 @@
     {% endif %}
 {%- endblock words_collection_rows -%}
 
+
 {% block word_row %}
+    {% spaceless %}
     <div id="{{ form.vars.id }}" class="word">
-        <input type="text"
-               class="spelling"
-               name="{{ form.spelling.vars.full_name }}"
-               value="{{ form.spelling.vars.value }}"/>
+        <input type="hidden" name="{{ form.id.vars.full_name }}" value="{{ form.id.vars.value }}"/>
+        {#{ block('expanded_edit') }#}
+        {{ block('word_spelling') }}
+        {{ block('word_translation') }}
+        {{ block('word_transcription') }}
+        {{ block('word_pronounce') }}
         {{ block('words_collection_remove_action') }}
+
     </div>
+    {% endspaceless %}
 {% endblock word_row %}
+
+{% block expanded_edit %}
+    <button type="button" class="btn">
+        <span class="fa fa-window-maximize"></span>
+    </button>
+{% endblock expanded_edit %}
+
+{% block word_spelling %}
+    <div class="word-spelling word-attribute">
+        <input  type="text"
+                class="spelling form-control attribute-input"
+                name="{{ form.spelling.text.vars.full_name }}"
+                value="{{ form.spelling.text.vars.value }}"
+                placeholder="{{ 'words_collection.word.spelling'|trans }}"
+                required/>
+    </div>
+{% endblock word_spelling %}
+
+{% block word_translation %}
+    <div class="word-translation word-attribute">
+        <div class="input-group">
+            <span class="input-group-addon">
+                <input type="checkbox"
+                       class="auto-checker"
+                       name="{{ form.translation.auto.vars.full_name }}"
+                       title="{{ 'words_collection.word.autoload'|trans }}"
+                       tabindex="-1">
+            </span>
+            <input  type="text"
+                class="translation form-control attribute-input"
+                name="{{ form.translation.text.vars.full_name }}"
+                value="{{ form.translation.text.vars.value }}"
+                placeholder="{{ 'words_collection.word.translation'|trans }}"/>
+            <input type="text"
+                   class="form-control auto-placeholder"
+                   disabled
+                   value="{{ 'words_collection.word.auto'|trans }}"/>
+        </div>
+    </div>
+
+{% endblock word_translation %}
+
+{% block word_transcription %}
+    <div class="word-transcription word-attribute">
+        <div class="input-group">
+            <span class="input-group-addon">
+                <input type="checkbox"
+                       class="auto-checker"
+                       name="{{ form.transcription.auto.vars.full_name }}"
+                       title="{{ 'words_collection.word.autoload'|trans }}"
+                       tabindex="-1">
+            </span>
+            <input  type="text"
+                    class="transcription form-control attribute-input"
+                    name="{{ form.transcription.text.vars.full_name }}"
+                    value="{{ form.transcription.text.vars.value }}"
+                    placeholder="{{ 'words_collection.word.transcription'|trans }}"/>
+            <input type="text"
+                   class="form-control auto-placeholder"
+                   disabled
+                   value="{{ 'words_collection.word.auto'|trans }}"/>
+        </div>
+    </div>
+{% endblock word_transcription %}
+
+{% block word_pronounce %}
+    <div class="word-pronounce word-attribute">
+        <span class="player disabled">
+            {% set audio_uri = vich_uploader_asset(form.pronounce.vars.value, 'audioFile', 'AppBundle\\Entity\\WordPronounce')%}
+            {% set audio_uri = form.pronounce.vars.value.status == 2 ? '' : audio_uri %}
+            <span class="play fa fa-play"></span>
+            <span class="stop fa fa-stop"></span>
+            <audio data-initial-src="{{ audio_uri}}"
+                   src="{{ audio_uri }}"
+                    onended="$(this).parent().removeClass('playing')"
+                    onerror="$(this).parent().addClass('disabled')"
+                    oncanplay="$(this).parent().removeClass('disabled')">
+            </audio>
+        </span>
+        <span class="source-type">
+            <select name="{{ form.pronounce.type.vars.full_name }}"
+                    class="form-control">
+                {% for text,type in form.pronounce.vars.value.types %}
+                    <option value="{{ type }}"
+                            {{ loop.index == 1 ? 'selected' : '' }}>
+                        {{ text|trans }}
+                    </option>
+                {% endfor %}
+            </select>
+        </span>
+        <input type="file"
+               class="audio-data audio-file"
+               accept="audio/*"
+               name="{{ form.pronounce.audioFile.vars.full_name }}">
+        <input type="hidden"
+               class="audio-data audio-mic"
+               name="{{ form.pronounce.audioMic.vars.full_name }}">
+        <input type="hidden"
+               class="audio-data audio-url"
+               name="{{ form.pronounce.audioURL.vars.full_name }}">
+        <input type="hidden"
+               name="{{ form.pronounce.id.vars.full_name }}"
+               value="{{ form.pronounce.id.vars.value }}"/>
+    </div>
+
+{% endblock word_pronounce %}

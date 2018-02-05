@@ -15,7 +15,6 @@
     opacity: .3;
 }
 .words-collection .add-word-action,
-.words-collection .remove-word-action,
 .words-collection .clear-words-action{
     display: inline-block;
     padding-left:1em;
@@ -30,14 +29,14 @@
 }
 .words-collection .scroll-container{
     max-height: 30em;
-    width: 21em;
+    max-width: 62em;
     overflow: auto;
 }
 
 .words-collection .new-word-container > *,
 .words-collection .words-list .word{
     margin: 0;
-    height: 2em;
+    #height: 2em;
     padding-left: 5em;
     position: relative;
 }
@@ -48,7 +47,7 @@
     width: 4em;
     text-align: right;
     position: absolute;
-    padding-top: .3em;
+    padding-top: .7em;
     top: 0;
     left: 0;
     font-family: FontAwesome;
@@ -88,15 +87,80 @@
     overflow: hidden;
 }
 
+.words-collection .word{
+    position: relative;
+    text-align: left;
+}
 
-.words-collection .words-list .word input.spelling,
-.words-collection .new-word-container .word input.spelling
+.words-collection .word > *{
+    vertical-align: middle;
+    display: inline-block;
+    max-width: 11em;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+
+
+.words-collection .word input[type=text]
 {
     border: 1px solid #ccc;
 }
-.words-collection .words-list .word input.spelling{
-    background: transparent;
+.words-collection .words-list .word input[type=text]{
+    #background: transparent;
 }
+
+.words-collection .word .word-attribute.auto .attribute-input,
+.words-collection .word .word-attribute:not(.auto) .auto-placeholder{
+    display: none;
+}
+
+.words-collection .word .word-pronounce{
+    display: inline-block;
+    white-space: nowrap;
+    max-width: 12em;
+}
+.words-collection .word .word-pronounce .player .play,
+.words-collection .word .word-pronounce .player .stop{
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
+    padding: .2em .3em;
+    border-radius: 100%;
+    border: 2px solid gray;
+    background: silver;
+    color: gray;
+    margin-right: .4em;
+}
+.words-collection .word .word-pronounce .player.playing .play,
+.words-collection .word .word-pronounce .player:not(.playing) .stop{
+    display: none;
+}
+.words-collection .word .word-pronounce .player .play:hover,
+.words-collection .word .word-pronounce .player .stop:hover{
+    background: #ddd;
+    transition: background .15s;
+}
+.words-collection .word .word-pronounce .player.disabled .play.play{
+    background: white;
+    color: #ccc;
+    border-color: #ccc;
+    cursor: not-allowed;
+}
+
+.words-collection .word .word-pronounce .source-type {
+    display: inline-block;
+}
+
+.words-collection .word .word-pronounce input[type=file],
+.words-collection .word .word-pronounce .messages
+{
+    display: none;
+}
+
+
+
 
 .words-collection .words-import {
     display: inline-block;
@@ -111,6 +175,7 @@
 .words-collection .words-import.wait .icon.wait{
     display: inline-block;
     color: blue;
+    animation: rotateAnimation 1s linear infinite;
 }
 .words-collection .words-import.done .icon.done{
     display: inline-block;
@@ -125,15 +190,67 @@
     display: none;
 }
 
-.words-collection .words-text .modal .modal-body{
+
+.words-collection .modal .modal-body{
     position: relative;
 }
-.words-collection .words-text .modal textarea{
+.words-collection .modal .modal-body >  textarea{
     width: 100%;
     resize: vertical;
 }
 
+.words-collection  .modal.microphone-pronounce .modal-body{
+    text-align: center;
+}
+.words-collection  .modal.microphone-pronounce .modal-body .time{
+    text-align: left;
+    display: inline-block;
+    width: 10em;
+}
+.words-collection  .modal.microphone-pronounce .modal-body .icon{
+    padding-left: 1em;
+    font-size: 5em;
+    color: maroon;
+    vertical-align:middle;
+}
+.words-collection  .modal.microphone-pronounce .modal-body .controls{
+    padding: 1em 2em;
+    display: inline-block;
+    vertical-align: middle;
+}
+.words-collection  .modal.microphone-pronounce .modal-body .controls .control{
+    font-size: 1.4em;
+    margin-left: 1em;
+    padding: .4em .5em;
+    color: gray;
+    cursor: pointer;
+}
 
+.words-collection  .modal.microphone-pronounce .modal-body .controls.opened .control:not(.record),
+.words-collection  .modal.microphone-pronounce .modal-body .controls.recording .control.record,
+.words-collection  .modal.microphone-pronounce .modal-body .controls.recording .control.resume,
+.words-collection  .modal.microphone-pronounce .modal-body .controls.recording .control.play,
+.words-collection  .modal.microphone-pronounce .modal-body .controls.paused .control.record,
+.words-collection  .modal.microphone-pronounce .modal-body .controls.paused .control.play,
+.words-collection  .modal.microphone-pronounce .modal-body .controls.paused .control.pause,
+.words-collection  .modal.microphone-pronounce .modal-body .controls.stopped .control.pause,
+.words-collection  .modal.microphone-pronounce .modal-body .controls.stopped .control.resume,
+.words-collection  .modal.microphone-pronounce .modal-body .controls.stopped .control.stop,
+.words-collection  .modal.microphone-pronounce .modal-body .controls.playing .control:not(.stop){
+    color: silver;
+    cursor: not-allowed;
+}
+.words-collection  .modal.microphone-pronounce .modal-body .controls:not(.paused) .control.resume,
+.words-collection  .modal.microphone-pronounce .modal-body .controls.paused .control.pause{
+    display: none;
+}
+
+.words-collection  .modal.microphone-pronounce .modal-body .controls .control:hover{
+    color: red;
+}
+.words-collection  .modal.microphone-pronounce .modal-body .controls .control.active{
+    color: maroon;
+}
 
 .words-collection .collection-empty{
     margin-left: 5em;

@@ -8,6 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Templating\EngineInterface;
 
 class DefaultController extends Controller
 {
@@ -17,10 +18,6 @@ class DefaultController extends Controller
     public function indexAction(Request $request)
     {
         return $this->redirectToRoute("dictionary_list");
-        // replace this example code with whatever you need
-        return $this->render('default/index.html.twig', [
-            'base_dir' => realpath($this->getParameter('kernel.project_dir')).DIRECTORY_SEPARATOR,
-        ]);
     }
     /**
      * @Route("/change-locale/{_locale}", name="change_locale", requirements={"_locale":"ru|en"})
@@ -31,13 +28,4 @@ class DefaultController extends Controller
         return $this->redirect($backUri);
     }
 
-    /**
-     * @Route("/delay-test/{seconds}")
-     */
-    public function delayTestAction(Request $request, $seconds=10){
-        if($request->getSession()->isStarted())
-            $request->getSession()->save();
-        sleep($seconds);
-        return new Response('delay test page');
-    }
 }

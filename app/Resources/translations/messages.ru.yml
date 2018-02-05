@@ -1,13 +1,101 @@
-dictionary_loading:
-  title.%dictionary_name%: Загрузка слов для словаря "%dictionary_name%"
-  cancel: Отмена
-  canceled: Отменено
-  done: Завершено
-  loaded_words: Загружено слов
 title:
+  dictionary_%name%: %name%
   dictionary_list: Список словарей
 menu:
   admin: Админка
   dictionary:
     list: Список словарей
+
+filter_placeholder: фильтр...
+
+word:
+  spelling: Написание
+  translation: Перевод
+  transcription: Транскрипция
+  pronounce: Произношение
+
+
+package:
+  name: Название
+  is_local: Локальная колода ? ( текущий словарь )
+
+
+dictionary:
+  view:
+    words_list: Список слов
+    words_in_page: Слов на странице
+    words_in_page_%count%: %count%
+    words_in_page_all: Все
+
+    external_modal.title: Открыть страницу с переводом слова на внешнем сервисе
+    external_modal.source_yandex: Яндекс переводчик
+    external_modal.source_wooord_hunt: WooordHunt ru
+    external_modal.close: Закрыть
+
+    new_package_modal:
+      title: Новая колода
+      form_submit: Создать
+      form_cancel: Отмена
+
+    package: Колода
+    new_package: Новая колода
+    remove_package: Удалить
+    remove_package_warning: Ошибка удаления
+    remove_package_awaiting: Выполняется
+    global_packages: Глобальные колоды
+    local_packages: Локальные колоды
+    all_global_package_title: Слова всех словарей
+    all_local_package_title: Все слова текущего словаря
+    bind_to_chosen_package: Добавить в колоду
+    new_package_request_error: Ошибка выполнения запроса
+
+    word_attributes_visibility: Отобразить/скрыть
+    exercises: Упражнения
+    exercise:
+      title:
+        choice:
+          translation:
+            from_spelling: Прямой перевод (выбор)
+            from_pronounce: Перевод по озвучке (выбор)
+          spelling:
+            from_translation: Обратный перевод (выбор)
+            from_pronounce: Слово по озвучке (выбор)
+
+        typing:
+          spelling:
+            from_translation: Обратный перевод (печать)
+            from_pronounce: Слово по озвучке (печать)
+
+      words_sorting: Сортировка
+      words_sorting.asc: По возрастанию
+      words_sorting.desc: По убыванию
+      words_sorting.random: Перемешать
+
+      result:
+        title: Результат
+        total: Всего слов
+        correct: Правильно
+        incorrect: Не правильно
+        skipped: Пропущено
+        score: Рейтинг
+
+      correct_answers: Правильно
+      type_answer: введите ответ
+      choose_correct_answer: выберите правильный ответ
+      move_cursor_to_see_answers: Перемещайте указатель мыши, чтобы увидеть ответы
+      dont_know: Не знаю
+      prev: Назад
+      next: Вперед
+      restart: Начать заново
+      finish: Завершить
+
+      transcription-hint: Транскрипция
+
+notification:
+  list_empty: Список пуст
+
+under_maintenance: Сайт на обслуживании, попробуйте зайти позже
+filter_placeholder:
+
+
 

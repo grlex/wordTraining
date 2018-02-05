@@ -1,0 +1,169 @@
+{% extends 'main_template.html.twig' %}
+
+{% block title %}
+    {{ 'title.dictionary_%name%'|trans({'%name%': dictionary.name }) }}
+{% endblock title %}
+
+{% block content %}
+    <div class="row dictionary-view">
+        <div class="col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2">
+            <h1 class="row text-center">{{ block('title') }}</h1>
+            <div class="row controls">
+                {% block dictionary_view_controls %}
+                    {% block exercises_control %}
+                        <div class="dropdown inline-block exercises-control">
+                        <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                            {{ 'dictionary.view.exercises'|trans }}
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            {% set class = 'AppBundle\\Controller\\DictionaryController' %}
+                            {% for label, exercise in {
+                                'choice.translation.from_spelling': constant(class ~ '::EXERCISE_CHOICE_TRANSLATION_FROM_SPELLING'),
+                                'choice.spelling.from_translation': constant(class ~ '::EXERCISE_CHOICE_SPELLING_FROM_TRANSLATION'),
+                                'choice.spelling.from_pronounce': constant(class ~ '::EXERCISE_CHOICE_SPELLING_FROM_PRONOUNCE'),
+                                'choice.translation.from_pronounce': constant(class ~ '::EXERCISE_CHOICE_TRANSLATION_FROM_PRONOUNCE'),
+                                'typing.spelling.from_translation': constant(class ~ '::EXERCISE_TYPING_SPELLING_FROM_TRANSLATION'),
+                                'typing.spelling.from_pronounce': constant(class ~ '::EXERCISE_TYPING_SPELLING_FROM_PRONOUNCE') }
+                            %}
+                                <li>
+                                    <a href="{{ path('dictionary_exercise', {
+                                                    id: dictionary.id,
+                                                    exercise: exercise,
+                                                    package_id: app.request.query.get('package_id', 'all-local')})
+                                    }}">
+                                        <span class="icon pull-right">
+                                            {% if loop.index in [1,2,5] %}
+                                                <span class="fa fa-font"></span>
+                                            {% else %}
+                                                <span class="fa fa-volume-up"></span>
+                                            {% endif %}
+                                            <span class="fa fa-long-arrow-right"></span>
+                                            {% if loop.index in [1,2,3,4] %}
+                                                <span class="fa fa-check-square-o"></span>
+                                            {% else %}
+                                                <span class="fa fa-pencil-square-o"></span>
+                                            {% endif %}
+                                        </span>
+                                        <span class="text">
+                                            {{ ('dictionary.view.exercise.title.' ~ label)|trans }}
+                                        </span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endblock exercises_control %}
+                    {% block package_control %}
+                        <div class="btn-group package-control">
+                            <button type="button"
+                                    class="btn btn-default add-new"
+                                    title="{{ 'dictionary.view.new_package'|trans }}"
+                                    {{ (not is_granted('IS_AUTHENTICATED_REMEMBERED')) ? 'disabled' }}>
+                                <span class="fa fa-plus"></span>
+                            </button>
+                            <button type="button"
+                                    class="btn btn-default dropdown-toggle"
+                                    data-toggle="dropdown"
+                                    title="{{ 'dictionary.view.package'|trans }}">
+                                {{ chosenPackage.id == 'all-local' ? 'dictionary.view.all_local_package_title'|trans :
+                                   chosenPackage.id == 'all-global' ? 'dictionary.view.all_global_package_title'|trans :
+                                   chosenPackage.name
+                                }}
+                                <span class="caret"></span>
+                            </button>
+                            {% set current_route = {
+                                name: app.request.attributes.get('_route'),
+                                parameters: app.request.query|merge(app.request.attributes.get('_route_params')) }
+                            %}
+                            <ul class="dropdown-menu">
+                                {#
+                                    === local packages ===
+                                #}
+                                <li class="dropdown-header">
+                                    {{ 'dictionary.view.local_packages'|trans }}
+                                </li>
+                                {% set package = { id: 'all-local', name: 'dictionary.view.all_local_package_title'|trans, predefined: true } %}
+                                {% block package_item_block %}
+                                    <li class="package" data-package-id="{{ package.id }}">
+                                        {% if not package.predefined|default(false) %}
+                                            <a href="#" class="remove">
+                                                <span class="status ready">
+                                                    <span class="icon ready fa fa-close"
+                                                          title="{{ 'dictionary.view.remove_package'|trans }}"></span>
+                                                    <span class="icon fail fa fa-warning"
+                                                          title="{{ 'dictionary.view.remove_package_warning'|trans }}"></span>
+                                                    <span class="icon done fa fa-check"></span>
+                                                    <span class="icon wait fa fa-spinner"
+                                                          title="{{ 'dictionary.view.remove_package_awaiting'|trans }}"></span>
+                                                </span>
+                                            </a>
+                                        {% endif %}
+                                        <a href="{{ path(current_route.name, current_route.parameters|merge({package_id:package.id})) }}"
+                                           class="name">{{ package.name }}</a>
+                                    </li>
+                                {% endblock package_item_block %}
+                                {% for package in userLocalPackages %}
+                                    {{ block('package_item_block') }}
+                                {% endfor %}
+                                {#
+                                    === global packages ===
+                                #}
+                                <li class="dropdown-header">
+                                    {{ 'dictionary.view.global_packages'|trans }}
+                                </li>
+                                {% set package = { id: 'all-global', name: 'dictionary.view.all_global_package_title'|trans, predefined: true} %}
+                                {{ block('package_item_block') }}
+                                {% for package in userGlobalPackages %}
+                                    {{ block('package_item_block') }}
+                                {% endfor %}
+
+                            </ul>
+                        </div>
+                    {% endblock package_control %}
+                {% endblock dictionary_view_controls %}
+            </div>
+            <div class="modals">
+                {% block modals %}
+                    {% block new_package_modal %}
+                        <div class="new-package modal fade" tabindex="-1" role="dialog">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <h4 class="modal-title">{{ 'dictionary.view.new_package_modal.title'|trans }}</h4>
+                                    </div>
+                                    {{ form_start(newPackageForm, {
+                                        action: path('package_new'),
+                                        enctype:'multipart/form-data',
+                                        method: 'post',
+                                        attr: {
+                                            'data-request-error-message': 'dictionary.view.new_package_request_error'|trans
+                                            } })
+                                    }}
+                                    <div class="modal-body">
+                                        {{ form_widget(newPackageForm) }}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <div class="buttons text-right">
+                                            <span class="status">
+                                                <span class="icon fail fa fa-warning"></span>
+                                                <span class="icon done fa fa-check"></span>
+                                                <span class="icon wait fa fa-spinner"></span>
+                                            </span>
+                                            <button type="button" class="btn btn-default cancel" data-dismiss="modal">{{ 'dictionary.view.new_package_modal.form_cancel'|trans }}</button>
+                                            <button type="button" class="btn btn-primary submit">{{ 'dictionary.view.new_package_modal.form_submit'|trans }}</button>
+                                        </div>
+                                    </div>
+                                    {{ form_end(newPackageForm) }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endblock new_package_modal %}
+                {% endblock modals %}
+            </div>
+            {% block dictionary_view_content %}
+            {% endblock dictionary_view_content %}
+        </div>
+    </div>
+{% endblock content %}

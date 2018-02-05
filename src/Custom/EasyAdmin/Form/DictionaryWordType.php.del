@@ -1,0 +1,95 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Alexey Grigoriev
+ * Date: 12.12.2017
+ * Time: 19:33
+ */
+
+namespace Custom\EasyAdmin\Form;
+
+
+use AppBundle\Entity\DictionaryWordInfo;
+use AppBundle\Entity\Translation;
+use AppBundle\Entity\Word;
+use Doctrine\Bundle\DoctrineBundle\Registry;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\CallbackTransformer;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\Extension\Core\Type;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+
+class DictionaryWordType extends AbstractType {
+
+    private $doctrine;
+    public function __construct(Registry $doctrine){
+        $this->doctrine = $doctrine;
+    }
+    public function buildForm(FormBuilderInterface $builder, array $options)
+    {
+        $builder->add('id', Type\HiddenType::class, array(
+        ));
+        $builder->add('spelling', Type\TextType::class, array(
+            'label'=>'spell'
+        ));
+        $builder->add('primaryTranslations', Type\CollectionType::class, array(
+            'entry_type' => TranslationType::class,
+            'allow_add' => true,
+            'allow_delete' => true
+        ));
+
+        $doctrine = $this->doctrine;
+        $builder->addModelTransformer(new CallbackTransformer(
+            function (DictionaryWordInfo $wordInfo=null){
+                if(is_null($wordInfo)) $wordInfo = new DictionaryWordInfo();
+                return array(
+                    'id' => $wordInfo->getId(),
+                    'spelling'=> (string)$wordInfo->getWord() ?: '',
+                    'primaryTranslations' => $wordInfo->getPrimaryTranslations()
+                );
+            },
+            function (array $normData) use ($doctrine){
+                if(!(array_key_exists('spelling', $normData) && $normData['spelling'])){
+                    return null;
+                }
+                $spelling = $normData['spelling'];
+                $word = $doctrine->getRepository('AppBundle:Word')->findOneBySpelling($spelling);
+                if(is_null($word)) {
+                    $word = new Word($spelling);
+                }
+                $wordInfo = null;
+                if(array_key_exists('id', $normData) && !is_null($normData['id'])){
+                    $wordInfo = $doctrine->getRepository('AppBundle:DictionaryWordInfo')->find($normData['id']);
+                }
+                if(is_null($wordInfo)) {
+                    $wordInfo = new DictionaryWordInfo();
+                }
+                $wordInfo->setWord($word);
+                $wordInfo->getPrimaryTranslations()->clear();
+                if(array_key_exists('primaryTranslations', $normData)){
+                    $translations = $normData['primaryTranslations'];
+                    $existedTranslations = $word->getTranslations()->map(function($tr){ return $tr->getMeaning();})->toArray();
+                    $wordId = $word->getId();
+                    foreach($translations as $translation){
+                        if(($key = array_search($translation->getMeaning(), $existedTranslations))>=0) {
+                            $wordInfo->addPrimaryTranslation($word->getTranslations()->get($key));
+                            continue;
+                        }
+                        if(is_null($translation->getWord())){
+                            $wordInfo->addPrimaryTranslation($translation);
+                        }
+                        else if($translation->getWord()->getId()!==$wordId){
+                            $t  = new Translation();
+                            $t->setMeaning( $translation->getMeaning());
+                            $wordInfo->addPrimaryTranslation($t);
+                        }
+                        // else -> nothing change
+                    }
+                }
+                return $wordInfo;
+            }
+        ));
+    }
+
+}

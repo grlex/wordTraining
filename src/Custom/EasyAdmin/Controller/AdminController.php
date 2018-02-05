@@ -7,18 +7,15 @@
  */
 namespace Custom\EasyAdmin\Controller;
 
-use AppBundle\Entity\Dictionary;
-use AppBundle\Entity\DictionaryLoading;
-use AppBundle\Entity\DictionaryLoadingRepository;
+use AppBundle\Entity\Settings;
+use Custom\EasyAdmin\Form\SettingsBackgroundImageType;
+use Custom\EasyAdmin\Form\SettingsType;
 use AppBundle\Entity\Word;
-use AppBundle\WordLoader\Exception\AbortedException;
-use Doctrine\DBAL\LockMode;
-use Doctrine\ORM\PessimisticLockException;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AdminController as BaseAdminController;
-use FOS\UserBundle\Doctrine\UserManager;
-use AppBundle\Entity\User;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use EasyCorp\Bundle\EasyAdminBundle\Exception\ForbiddenActionException;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Util\LegacyFormHelper;
 use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,8 +23,6 @@ use Symfony\Component\Form\Extension\Core\Type;
 use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use AppBundle\WordLoader\Event\TryLoadEvent;
-use AppBundle\WordLoader\Event\WaitingEvent;
 
 class AdminController extends BaseAdminController {
 
@@ -57,4 +52,34 @@ class AdminController extends BaseAdminController {
     private function getUserManager(){
         return $this->get('fos_user.user_manager');
     }
+
+
+
+    public function createWordListQueryBuilder($entityClass, $sortDirection, $sortField, $dqlFilter){
+        $qb = $this->em->createQueryBuilder()
+            ->from(Word::class, 'entity')
+            ->select('entity');
+        switch($sortField){
+            case 'spelling':
+                $qb->leftJoin('entity.spelling', 'spelling')
+                    ->orderBy('spelling.text', $sortDirection);
+                break;
+            case 'translation':
+                $qb->leftJoin('entity.translation', 'translation')
+                    ->orderBy('translation.text', $sortDirection);
+                break;
+            case 'transcription':
+                $qb->leftJoin('entity.transcription', 'transcription')
+                    ->orderBy('transcription.text', $sortDirection);
+                break;
+            case 'dictionary':
+                $qb->leftJoin('entity.dictionary', 'dictionary')
+                    ->orderBy('dictionary.name', $sortDirection);
+        }
+        return $qb;
+    }
+
+
+
 }
+

@@ -1,13 +1,97 @@
-dictionary_loading:
-  title.%dictionary_name%: Loading words of the category "%dictionary_name%"
-  cancel: Cancel
-  cancelled: Cancelled
-  done: Done
-  loaded_words: Loaded words
 title:
+  dictionary_%name%: %name%
   dictionary_list: Dictionary list
 menu:
   admin: Admin
-  category:
-    list: Dictionary list
+  dictionary:
+    list: Dictionaries
 
+filter_placeholder: filter...
+
+word:
+  spelling: Spelling
+  translation: Translation
+  transcription: Transcription
+  pronounce: Pronounce
+
+
+package:
+  name: Name
+  is_local: Local package ? ( current dictionary )
+
+
+dictionary:
+  view:
+    words_list: Words list
+    words_in_page: Words in page
+    words_in_page_%count%: %count%
+    words_in_page_all: All
+
+    external_modal.title: Open external translation service
+    external_modal.source_yandex: Yandex translator
+    external_modal.source_wooord_hunt: WooordHunt ru
+    external_modal.close: Close
+
+    new_package_modal:
+      title: New package
+      form_submit: Create
+      form_cancel: Cancel
+
+    package: Package
+    new_package: New Package
+    remove_package: Remove
+    remove_package_warning: Removal error
+    remove_package_awaiting: Processing
+    global_packages: Global packages
+    local_packages: Local packages
+    all_global_package_title: All dictionaries words
+    all_local_package_title: Current dictionary words
+    bind_to_chosen_package: Add to package
+    new_package_request_error: Request error
+
+    word_attributes_visibility: Show/Hide
+    exercises: Exercises
+    exercise:
+      title:
+        choice:
+          translation:
+            from_spelling: Forward translation (choosing)
+            from_pronounce: Translation by audio (choosing)
+          spelling:
+            from_translation: Reverse translation (choosing)
+            from_pronounce: Word by audio (choosing)
+
+        typing:
+          spelling:
+            from_translation: Reverse translation (typing)
+            from_pronounce: Word by audio (typing)
+
+      words_sorting: Sorting
+      words_sorting.asc: Ascending
+      words_sorting.desc: Descending
+      words_sorting.random: Random
+
+      result:
+        title: Result
+        total: Total words
+        correct: Correct
+        incorrect: Incorrect
+        skipped: Skipped
+        score: Score
+
+      correct_answers: Correct
+      type_answer: Type answer
+      choose_correct_answer: Choose correct answer
+      move_cursor_to_see_answers: Move the mouse to see answers
+      dont_know: Don't know
+      prev: Previous
+      next: Next
+      restart: Restart
+      finish: Finish
+
+      transcription-hint: Transcription
+
+notification:
+  list_empty: The list is empty
+
+under_maintenance: The site is under maintenance. Try to visit later.

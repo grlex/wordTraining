@@ -1,0 +1,146 @@
+{% extends 'dictionary/common_template.html.twig' %}
+
+{% block dictionary_view_controls %}
+    <div class="text-center">
+        <div class="dropdown inline-block words-order-control">
+            <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                {{ 'dictionary.view.exercise.words_sorting'|trans }}
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li class="asc">
+                    <a href="#" data-order="asc">
+                        <span class="fa fa-sort-alpha-asc pull-right"></span>
+                        <span class="text">{{ 'dictionary.view.exercise.words_sorting.asc'|trans }}</span>
+                    </a>
+
+                </li>
+                <li class="desc">
+                    <a href="#" data-order="desc">
+                        <span class="fa fa-sort-alpha-desc pull-right"></span>
+                        <span class="text">{{ 'dictionary.view.exercise.words_sorting.desc'|trans }}</span>
+                    </a>
+                </li>
+                <li class="random">
+                    <a href="#" data-order="random">
+                        <span class="fa fa-random pull-right"></span>
+                        <span class="text">{{ 'dictionary.view.exercise.words_sorting.random'|trans }}</span>
+                    </a>
+
+                </li>
+            </ul>
+        </div>
+        <button class="btn btn-default restart-control">
+            {{ 'dictionary.view.exercise.restart'|trans }}
+        </button>
+        <a  class="btn btn-default back-to-list-control"
+            href="{{ path('dictionary_words', app.request.query|merge({'id': dictionary.id})) }}">
+            {{ 'dictionary.view.words_list'|trans }}
+        </a>
+        {{ parent() }}
+    </div>
+{% endblock dictionary_view_controls %}
+
+
+{% block dictionary_view_content %}
+    {% set class='AppBundle\\Controller\\DictionaryController' %}
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <div class="exercise-widget" data-exercise="{{ exercise }}">
+                {% spaceless %}
+                <div class="exercise-question text-vertical-middle ">
+                    <div class="exercise-nav-buttons">
+                        <div class="nav-btn prev text-vertical-middle"><span class="fa fa-chevron-left"></span></div>
+                        <div class="nav-btn next text-vertical-middle"><span class="fa fa-chevron-right"></span></div>
+                    </div>
+                    <div class="question-finish">
+                        <button class="finish btn btn-secondary" type="button">
+                            {{ 'dictionary.view.exercise.finish'|trans }}
+                            <span class="fa fa-flag-checkered"></span>
+                        </button>
+                    </div>
+                    <div class="question-header clearfix">
+                        <span class="progress-counter pull-left">
+                            <span class="current">0</span>
+                            /
+                            <span class="total">{{ dictionary.words.count }}</span>
+                        </span>
+                        <span class="correct-counter pull-right">
+                            {{ 'dictionary.view.exercise.correct_answers'|trans }}:
+                            <span class="counter">0</span>
+                        </span>
+                    </div>
+                    <div class="question-body">
+                        {% if exercise == constant(class ~ '::EXERCISE_CHOICE_SPELLING_FROM_PRONOUNCE')
+                           or exercise == constant(class ~ '::EXERCISE_TYPING_SPELLING_FROM_PRONOUNCE')
+                           or exercise == constant(class ~ '::EXERCISE_CHOICE_TRANSLATION_FROM_PRONOUNCE') %}
+                            {{ include('dictionary/includes/_exercise_audio_question.html.twig') }}
+                        {% endif %}
+                    </div>
+                    <div class="question-footer">
+                    </div>
+                </div>
+                {% endspaceless %}
+
+                <div class="exercise-answer">
+                    {% if exercise == constant(class ~ '::EXERCISE_CHOICE_TRANSLATION_FROM_SPELLING')
+                        or exercise == constant(class ~ '::EXERCISE_CHOICE_SPELLING_FROM_TRANSLATION')
+                        or exercise == constant(class ~ '::EXERCISE_CHOICE_SPELLING_FROM_PRONOUNCE')
+                        or exercise == constant(class ~ '::EXERCISE_CHOICE_TRANSLATION_FROM_PRONOUNCE')
+                    %}
+                        {{ include('dictionary/includes/_exercise_choice_answer.html.twig', { words_count: chosenPackage.words|length }) }}
+                    {% else %}
+                        {{ include('dictionary/includes/_exercise_writing_answer.html.twig') }}
+                    {% endif %}
+                </div>
+
+                <div class="exercise-result">
+                    <h4 class="text-center">{{ 'dictionary.view.exercise.result.title'|trans }}</h4>
+                    <div class="score">
+                        <ul class="list-unstyled list-inline score-stars row">
+                            {% for i in 1..5 %}
+                                <li class="star star-{{ i }} empty">
+                                    <span class="icon empty fa fa-star-o"></span>
+                                    <span class="icon half fa fa-star-half-o"></span>
+                                    <span class="icon filled fa fa-star"></span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="percentage"><span class="wrapper"><span class="value">0</span>%</span>
+                    </div>
+                    <div class="counters">
+                        <div class="counter total">{{ 'dictionary.view.exercise.result.total'|trans }}: <span class="count badge badge-info">0</span></div>
+                        <div class="counter correct">{{ 'dictionary.view.exercise.result.correct'|trans }}: <span class="count badge badge-success">0</span></div>
+                        <div class="counter incorrect">{{ 'dictionary.view.exercise.result.incorrect'|trans }}: <span class="count badge badge-danger">0</span></div>
+                        <div class="counter skipped">{{ 'dictionary.view.exercise.result.skipped'|trans }}: <span class="count badge badge-secondary">0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="exercise-choices"></div>
+        </div>
+    </div>
+{% endblock dictionary_view_content %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script>
+        var words = [
+            {% for word in chosenPackage.words %}
+            {
+                spelling: '{{ word.spelling.text }}',
+                translation: '{{ word.translation.text }}',
+                transcription: '{{ word.transcription.text }}',
+                audioURL:  '{{ word.pronounce ? vich_uploader_asset(word.pronounce, 'audioFile')|replace({' ':'%20'}) }}'
+            },
+            {% endfor %}
+        ];
+        window.wordExercise = AbstractWordExercise.create($('.dictionary-view .exercise-widget'), words);
+        window.wordExercise.start();
+    </script>
+{% endblock javascripts %}

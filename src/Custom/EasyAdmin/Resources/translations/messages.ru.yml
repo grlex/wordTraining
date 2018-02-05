@@ -1,0 +1,113 @@
+action.clear_items: Очистить список
+action.new: Добавить
+
+words_collection.import_from_file: Импортировать из файла
+words_collection.import_from_text: Импортировать из текста
+words_collection.new_word_paceholder: 'Введите слово'
+words_collection.filter: Фильтр...
+words_collection.duplicate: Слово уже есть в списке
+words_collection.invalid: Слово должно содержать только буквы из английского алфавита, не менее 2 символов
+words_collection.modal.text_import.accept: Импортировать
+words_collection.modal.accept: Принять
+words_collection.modal.cancel: Отмена
+
+words_collection.word.spelling: Написание
+words_collection.word.translation: Перевод
+words_collection.word.transcription: Транскрипция
+words_collection.word.pronounce: Произношение
+words_collection.word.autoload: Загрузить поле автоматически
+words_collection.word.auto: Авто
+
+
+dictionary_processing:
+  title.%dictionary_name%: Загрузка слов для словаря "%dictionary_name%"
+  pause: Приостановить
+  paused: Остановлена
+  resume: Возобновить
+  done: Завершено
+  processing: Выполняется
+
+
+word:
+  status:
+    pending: 'В очереди на загрузку'
+    loading: 'Загружается'
+    incorrect: 'Слово не определено'
+    translated: 'Загружено'
+
+word_pronounce:
+  type:
+    unavailable: ---
+    no: Без озвучки
+    initial: Исходная
+    initial_loading: (Загружается)
+    file: Файл
+    link: Ссылка (URL)
+    microphone: Микрофон
+    auto: Авто
+  title: Озвучка
+  microphone:
+    record: Запись
+    pause: Пауза
+    resume: Продолжить
+    stop: Остановить
+    play: Прослушать
+
+  messages:
+    microphone_record: Записать озвучку на микрофон
+    enter_audio_url: Введите URL к файлу с озвучкой
+    audio_url_invalid: Неправильный URL
+
+
+menu:
+  go-public: Публичный раздел
+  users: Пользователи
+  dictionaries: Словари
+  words: Слова
+  settings: Настройки
+
+word_training_site_name: Тренажор слов
+
+settings:
+  title: Настройки
+  under_maintenance: На обслуживании
+  show_background_images: Показывать выбранные фоны в публичном разделе
+  background_images: Фоны страниц публичного раздела
+  form.save: Сохранить
+  backgrounds:
+    remove: Удалить
+    recover: Вернуть
+    repeat: Дублируется
+    cover: Растянут
+    active: Активен
+    inactive: Не активен
+    action_deactivate: Не показвать всех
+    action_clear: Удалить всех
+
+
+ID: ID
+# User
+User: Пользователь
+Users: Пользователи
+Username: Логин
+Roles: Роли
+Enabled: Активный
+'Last login': Последний вход
+#Dictionary
+Dictionary: Словарь
+Dictionaries: Словари
+Name: Название
+'Processing info': Обработка
+#Word
+Word: Слово
+Words: Слова
+Spelling: Написание
+Transcription: Транскрипция
+Pronounce: Озвучка
+Translation: Перевод
+
+
+
+
+
+

@@ -1,14 +1,40 @@
 easy_admin:
+    site_name: word_training_site_name
     design:
         form_theme:
              - 'horizontal'
-             - '@CustomEasyAdminBundle/Resources/views/form/custom_easy_admin_form_theme.html.twig'
+             - '@CustomEasyAdminBundle/Resources/views/form/form_theme.html.twig'
         templates:
             layout: '@CustomEasyAdminBundle/Resources/views/default/custom_layout.html.twig'
 
+        menu:
+            - url: '/'
+              label: menu.go-public
+              icon: home
+            - entity: User
+              label: menu.users
+              icon: user
+            - entity: Dictionary
+              default: true
+              label: menu.dictionaries
+              icon: cube
+            - entity: Word
+              label: menu.words
+              icon: cube
+            - route: admin_settings
+              label: menu.settings
+              icon: cogs
     entities:
         User:
             class: AppBundle\Entity\User
+            list:
+                title: Users
+                fields:
+                    - username
+                    - roles
+                    - enabled
+                    - lastLogin
+                actions: [ search, show, new, edit, delete ]
             form:
                 fields:
                     - username
@@ -33,14 +59,15 @@ easy_admin:
             class: AppBundle\Entity\Dictionary
 
             list:
+                title: Dictionaries
                 fields:
-                    - 'name'
-                    - 'words'
-                    - property: 'loadingInfo'
-                      template: '@CustomEasyAdminBundle/Resources/views/dictionary/field_dictionary_loading.html.twig'
+                    - id
+                    - name
+                    - words
+                    - property: processingInfo
+                      template: '@CustomEasyAdminBundle/Resources/views/dictionary/field_dictionary_processing.html.twig'
                       sortable: false
-                actions: ['show', 'edit', 'delete' ]
-
+                actions: [ search, show, new, edit, delete ]
             show:
                 fields: [ 'id', 'name', 'words' ]
             form:
@@ -48,58 +75,35 @@ easy_admin:
                     - name
                     - property: words
                       type: Custom\EasyAdmin\Form\WordsCollectionType
+            new:
+                form_options:
+                    csrf_protection: false
         Word:
             class: AppBundle\Entity\Word
+            disabled_actions: [ new, edit ]
             list:
-                actions: [ 'show', 'edit', 'delete' ]
+                title: Words
+                actions: [ 'show', '-new', '-edit', 'delete' ]
                 fields:
                     - id
-                    - spelling
+                    - property: spelling
+                      type: text
                     - property: transcription
                       template: '@CustomEasyAdminBundle/Resources/views/word/field_word_transcription.html.twig'
-                    - property: 'soundFilename'
-                      label: 'word.soundFilename'
+                    - property: pronounce
+                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_pronounce.html.twig'
                       sortable: false
-                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_sound_file.html.twig'
-                    - property: status
-                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_status.html.twig'
-                    - property: translations
-                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_translations.html.twig'
-                    - examples
-                    - dictionaries
-                    - forms
+                    - property: translation
+                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_cut_translation.html.twig'
+                    - property: dictionary
             show:
                 fields:
-                    - id
-                    - spelling
-                    - property: transcription
-                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_transcription.html.twig'
-                    - property: 'soundFilename'
-                      label: 'word.soundFilename'
-                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_sound_file.html.twig'
-                    - property: status
-                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_status.html.twig'
-                    - translations
-                    - property: examples
-                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_examples.html.twig'
-                    - dictionaries
-                    - property: forms
-                      template: '@CustomEasyAdminBundle/Resources/views/word/field_word_forms.html.twig'
-            form:
-                fields:
-                    - spelling
-                    - transcription
-                    - property: 'soundFile'
-                      label: 'word.soundFile'
-                      type: 'vich_file'
-                    #- status
-                    - property: translations
-                      type: collection
-                      type_options:
-                          entry_type: Custom\EasyAdmin\Form\TranslationType
-                    - property: examples
-                      type: collection
-                      type_options:
-                          entry_type: Custom\EasyAdmin\Form\ExampleType
-                    - dictionaries
-                    #- forms
+                   - id
+                   - spelling
+                   - property: transcription
+                     template: '@CustomEasyAdminBundle/Resources/views/word/field_word_transcription.html.twig'
+                   - property: pronounce
+                     template: '@CustomEasyAdminBundle/Resources/views/word/field_word_pronounce.html.twig'
+                   - property: translation
+                     type: text
+                   - dictionary

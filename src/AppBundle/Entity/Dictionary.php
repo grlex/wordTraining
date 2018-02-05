@@ -7,6 +7,7 @@
  */
 
 namespace AppBundle\Entity;
+use Doctrine\ORM\Event\LifecycleEventArgs;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -18,8 +19,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  * Class Dictionary
  * @package AppBundle\Model
  * @ORM\Entity(repositoryClass = "DictionaryRepository")
- * @ORM\Table(name="dictionary")
  * @UniqueEntity("name")
+ * @ORM\HasLifecycleCallbacks
  */
 class Dictionary {
     /**
@@ -38,25 +39,16 @@ class Dictionary {
     private $name;
 
     /**
-     * @var Word[] dictionary words
-     * @ORM\ManyToMany(targetEntity="Word", inversedBy="dictionaries", cascade={"persist","merge", "detach"})
-     * @ORM\OrderBy({"spelling"="ASC"})
-     * @ORM\JoinTable(joinColumns={@ORM\JoinColumn(name="dictionary_id", referencedColumnName="id", onDelete="CASCADE", unique=false)},
-     *         inverseJoinColumns={@ORM\JoinColumn(name="word_id", referencedColumnName="id", onDelete="CASCADE", unique=false)})
+     * @var Word[]
+     * @ORM\OneToMany(targetEntity="Word", mappedBy="dictionary", cascade={"persist", "remove", "merge", "detach"}, orphanRemoval=true)
      */
     private $words;
 
     /**
-     * @var DictionaryLoading
-     * @ORM\OneToOne(targetEntity="DictionaryLoading", mappedBy="dictionary", cascade={"persist", "remove"})
+     * @var DictionaryProcessing
+     * @ORM\OneToOne(targetEntity="DictionaryProcessing", mappedBy="dictionary", cascade={"persist", "remove"})
      */
-    private $loadingInfo;
-
-    /**
-     * @var Package
-     * @ORM\OneToMany(targetEntity="Package", mappedBy="dictionary", cascade={"persist", "remove"})
-     */
-    private $packages;
+    private $processingInfo;
 
 
 
@@ -70,9 +62,14 @@ class Dictionary {
      */
     public function __construct()
     {
+        $this->processingInfo = new DictionaryProcessing();
+        $this->processingInfo->setDictionary($this);
         $this->words = new \Doctrine\Common\Collections\ArrayCollection();
         $this->packages = new \Doctrine\Common\Collections\ArrayCollection();
     }
+
+
+
 
     /* ========================  ================== */
 
@@ -112,34 +109,64 @@ class Dictionary {
         return $this->name;
     }
 
+
     /**
-     * Add word
+     * Set processingInfo
      *
-     * @param \AppBundle\Entity\Word $word
+     * @param \AppBundle\Entity\DictionaryProcessing $processingInfo
      *
      * @return Dictionary
      */
-    public function addWord(\AppBundle\Entity\Word $word)
+    public function setProcessingInfo(\AppBundle\Entity\DictionaryProcessing $processingInfo = null)
     {
-        $this->words[] = $word;
-        $total = $this->loadingInfo->getTotal();
-        $this->loadingInfo->setTotal(++$total);
-        $this->loadingInfo->setStatus(DictionaryLoading::STATUS_PENDING);
+        $processingInfo->setDictionary($this);
+        $this->processingInfo = $processingInfo;
+
         return $this;
     }
 
     /**
-     * Remove word
+     * Get processingInfo
      *
-     * @param \AppBundle\Entity\Word $word
+     * @return \AppBundle\Entity\DictionaryProcessing
      */
-    public function removeWord(\AppBundle\Entity\Word $word)
+    public function getProcessingInfo()
     {
+        return $this->processingInfo;
+    }
+
+
+    /**
+     * Add dictionary word
+     *
+     * @param Word $word
+     *
+     * @return Dictionary
+     */
+    public function addWord(Word $word)
+    {
+        $word->setDictionary($this);
+        $this->words->add($word);
+        $total = $this->processingInfo->getTotal();
+        $this->processingInfo->setTotal(++$total);
+        $this->processingInfo->setProcessed(0);
+        $this->processingInfo->setStatus(DictionaryProcessing::STATUS_PENDING);
+        return $this;
+    }
+
+    /**
+     * Remove  word
+     *
+     * @param Word $word
+     */
+    public function removeWord(Word $word)
+    {
+        $word->setDictionary(null);
         $this->words->removeElement($word);
-        $total = $this->loadingInfo->getTotal();
-        $this->loadingInfo->setTotal(--$total);
-        $loaded = $this->loadingInfo->getLoaded();
-        $this->loadingInfo->setLoaded($loaded>$total ? $total : $loaded );
+        $total = $this->processingInfo->getTotal();
+        $this->processingInfo->setTotal(--$total);
+        $this->processingInfo->setProcessed(0);
+        $this->processingInfo->setStatus(DictionaryProcessing::STATUS_PENDING);
     }
 
     /**
@@ -152,65 +179,4 @@ class Dictionary {
         return $this->words;
     }
 
-
-    /**
-     * Set loadingInfo
-     *
-     * @param \AppBundle\Entity\DictionaryLoading $loadingInfo
-     *
-     * @return Dictionary
-     */
-    public function setLoadingInfo(\AppBundle\Entity\DictionaryLoading $loadingInfo = null)
-    {
-        $loadingInfo->setDictionary($this);
-        $this->loadingInfo = $loadingInfo;
-
-        return $this;
-    }
-
-    /**
-     * Get loadingInfo
-     *
-     * @return \AppBundle\Entity\DictionaryLoading
-     */
-    public function getLoadingInfo()
-    {
-        return $this->loadingInfo;
-    }
-
-    /**
-     * Add package
-     *
-     * @param Package $package
-     *
-     * @return Dictionary
-     */
-    public function addPackage(Package $package)
-    {
-        $this->packages[] = $package;
-        return $this;
-    }
-
-    /**
-     * Remove package
-     *
-     * @param Package $package
-     *
-     * @return Dictionary
-     */
-    public function removePackage(Package $package)
-    {
-        $this->packages->removeElement($package);
-        return $this;
-    }
-
-    /**
-     * Get packages
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getPackages()
-    {
-        return $this->packages;
-    }
 }

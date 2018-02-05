@@ -34,25 +34,56 @@ services:
     #     arguments:
     #         $someArgument: 'some_value'
 
-    app.vich_uploader_namer:
-        class: AppBundle\Service\VichUploaderNamer
-        public: true
-    app.word_loader:
-        class: AppBundle\WordLoader\WooordHuntRuWordLoader
+
+    app.filter_form_handler:
+        class: AppBundle\Form\FilterFormHandler
         arguments:
-              - '%kernel.project_dir%/web/%words_sound_web_dir%'
-              - '@doctrine'
-              - '%word_loader.request_interval%'
-              - '@event_dispatcher'
+              - '@form.factory'
         public: true
+
+
+    app.word_loader: '@app.default_word_loader'
+    app.default_word_loader:
+        class: Custom\EasyAdmin\WordHandler\WordLoader\AppWordLoader
+        arguments:
+            - '%kernel.project_dir%/web/%words_audio_web_dir%'
+            - '%yandex_translator_api_key%'
+            - '%word_handler.request_rate_delay%'
+    app.wooord_hunt_ru_loader:
+        class: Custom\EasyAdmin\WordHandler\WordLoader\WooordHuntRuWordLoader
+        arguments:
+            - '%kernel.project_dir%/web/%words_audio_web_dir%'
+            - '%word_handler.request_rate_delay%'
+    app.yandex_translator_loader:
+        class: Custom\EasyAdmin\WordHandler\WordLoader\YandexWordLoader
+        arguments:
+             - '%word_handler.request_rate_delay%'
+
+    app.word_handler:
+        alias: 'Custom\EasyAdmin\WordHandler\DoctrineWordHandler'
+        public: true
+    Custom\EasyAdmin\WordHandler\DoctrineWordHandler:
+        arguments:
+            - '@doctrine'
+            - '@app.word_loader'
+            - '%kernel.project_dir%/web/%words_audio_web_dir%'
+            - '@event_dispatcher'
+
+
 
     Custom\EasyAdmin\Form\WordType:
         arguments: [ '@doctrine' ]
         tags: [ 'form.type' ]
-    Custom\EasyAdmin\Form\ExampleType:
+    Custom\EasyAdmin\Form\WordSpellingType:
         arguments: [ '@doctrine' ]
         tags: [ 'form.type' ]
-    Custom\EasyAdmin\Form\TranslationType:
-            arguments: [ '@doctrine' ]
-            tags: [ 'form.type' ]
+    Custom\EasyAdmin\Form\WordTranslationType:
+        arguments: [ '@doctrine' ]
+        tags: [ 'form.type' ]
+    Custom\EasyAdmin\Form\WordTranscriptionType:
+        arguments: [ '@doctrine' ]
+        tags: [ 'form.type' ]
+    Custom\EasyAdmin\Form\WordPronounceType:
+        arguments: [ '@doctrine' ]
+        tags: [ 'form.type' ]
 

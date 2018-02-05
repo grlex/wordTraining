@@ -1,0 +1,20 @@
+.word-pronounce-widget span{
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
+    padding: .4em .5em;
+    border-radius: 100%;
+    border: 2px solid gray;
+    background: silver;
+    color: gray;
+}
+.word-pronounce-widget.disabled span{
+    border: 2px solid #ccc;
+    background: #ddd;
+    color: #ccc;
+    cursor: not-allowed;
+}
+.word-pronounce-widget:not(.disabled) span:hover{
+    background: #ddd;
+    transition: background .15s;
+}

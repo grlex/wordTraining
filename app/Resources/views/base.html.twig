@@ -5,10 +5,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <title>{% block title %}Welcome!{% endblock %}</title>
         {% block stylesheets %}
-            <link rel="stylesheet" type="text/css" href="{{ asset('/css/font-awesome.min.css') }}"/>
-            <link rel="stylesheet" type="text/css" href="{{ asset('/css/bootstrap.min.css') }}"/>
+            <link rel="stylesheet" type="text/css" href="{{ asset('css/font-awesome.min.css') }}"/>
+            <link rel="stylesheet" type="text/css" href="{{ asset('css/bootstrap.min.css') }}"/>
             <link type="text/css" rel="stylesheet" href="{{ asset('css/magnific-popup.css') }}"/>
             <link type="text/css" rel="stylesheet" href="{{ asset('css/styles.css') }}"/>
+            <link type="text/css" rel="stylesheet" href="{{ asset('css/common.css') }}"/>
+            <link type="text/css" rel="stylesheet" href="{{ asset('bundles/customeasyadmin/stylesheet/field-word-pronounce.css') }}"/>
         {% endblock %}
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
     </head>

@@ -1,0 +1,125 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Alexey Grigoriev
+ * Date: 29.11.2017
+ * Time: 13:53
+ */
+
+namespace AppBundle\Entity;
+
+use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\ORM\Mapping as ORM;
+/**
+ * Class Word
+ * @package AppBundle\Model
+ * @ORM\Entity(repositoryClass="WordAttributeRepository")
+ */
+class WordSpelling extends WordAttribute {
+
+    /**
+     * @var string
+     * @ORM\Column(type="string", length=200, unique=true, nullable=true)
+     */
+    private $text;
+
+    /**
+     * @var Word
+     * @ORM\OneToMany(targetEntity="Word", mappedBy="spelling", cascade={"persist", "merge", "detach"})
+     */
+    private $words;
+
+    /**
+     * @var WordTranslation
+     * @ORM\OneToOne(targetEntity="WordTranslation")
+     */
+    private $autoTranslation;
+
+    /**
+     * @var WordTranscription
+     * @ORM\OneToOne(targetEntity="WordTranscription")
+     */
+    private $autoTranscription;
+
+    /**
+     * @var WordTranscription
+     * @ORM\OneToOne(targetEntity="WordPronounce")
+     */
+    private $autoPronounce;
+
+
+    public function __toString(){
+        return $this->text;
+    }
+
+    /**
+     * Constructor
+     */
+    public function __construct($spellingText='')
+    {
+        parent::__construct();
+        $this->words = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->text = $spellingText;
+    }
+
+    /* ==========================   =============== */
+
+
+    /**
+     * Set text
+     *
+     * @param string $text
+     *
+     * @return WordSpelling
+     */
+    public function setText($text)
+    {
+        $this->text = $text;
+
+        return $this;
+    }
+
+    /**
+     * Get text
+     *
+     * @return string
+     */
+    public function getText()
+    {
+        return $this->text;
+    }
+
+    /**
+     * Add word
+     *
+     * @param \AppBundle\Entity\Word $word
+     *
+     * @return WordSpelling
+     */
+    public function addWord(\AppBundle\Entity\Word $word)
+    {
+        $this->words[] = $word;
+
+        return $this;
+    }
+
+    /**
+     * Remove word
+     *
+     * @param \AppBundle\Entity\Word $word
+     */
+    public function removeWord(\AppBundle\Entity\Word $word)
+    {
+        $this->words->removeElement($word);
+    }
+
+    /**
+     * Get words
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getWords()
+    {
+        return $this->words;
+    }
+}

@@ -6,7 +6,15 @@ app:
 fos_user:
     resource: "@FOSUserBundle/Resources/config/routing/all.xml"
 
-easy_admin_bundle:
-    resource: "@CustomEasyAdminBundle/Controller/"
+dictionary_admin:
+    resource: "@CustomEasyAdminBundle/Controller/DictionaryAdminController.php"
+    type:     annotation
+    prefix:   /admin
+settings_admin:
+    resource: "@CustomEasyAdminBundle/Controller/SettingsAdminController.php"
+    type:     annotation
+    prefix:   /admin
+common_admin:
+    resource: "@CustomEasyAdminBundle/Controller/AdminController.php"
     type:     annotation
     prefix:   /admin

@@ -1,0 +1,149 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Alexey Grigoriev
+ * Date: 09.12.2017
+ * Time: 17:19
+ */
+
+namespace AppBundle\Controller;
+
+
+
+use AppBundle\Entity\DictionaryWordInfo;
+use AppBundle\Form\FilterType;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use AppBundle\Entity\Dictionary;
+use AppBundle\Entity\Package;
+use AppBundle\Entity\Word;
+
+class DictionaryController extends Controller {
+
+    public function getRepository($class=Dictionary::class){
+        return $this->getDoctrine()->getRepository($class);
+    }
+    public function getDictionary($id){
+        return $this->getRepository()->find($id);
+    }
+    /**
+     * @Route("/dictionary/list", name="dictionary_list")
+     */
+    public function listAction(Request $request){
+        $filterFormHandler = $this->get('app.filter_form_handler');
+        $filterForm = $filterFormHandler->createForm(array(
+            'filterField' => 'name',
+            'filterValue' => ''
+        ));
+        $filterFormHandler->handleRequest($filterForm, $request);
+
+        $listQuery = $this->getRepository()->createListQuery();
+        $paginator = $this->get('knp_paginator');
+        $pagination = $paginator->paginate(
+            $listQuery,
+            $request->query->getInt('page', 1),
+            10
+        );
+
+
+        return $this->render('dictionary/list.html.twig', array(
+            'pagination' => $pagination,
+            'filterForm' => $filterForm->createView()
+        ));
+    }
+
+    /**
+     * @param Request $request
+     * @param $id
+     * @Route("/dictionary/view/{id}", name="dictionary_view")
+     */
+    public function viewAction(Request $request, $id){
+        $wordsListInfo = $this->createWordsFilterAndPagination($request, $id);
+        $packagesListInfo = $this->createPackagesFilterAndPagination($request, $id);
+        return $this->render('dictionary/view.html.twig', array(
+            'dictionary' => $this->getDictionary($id),
+            'wordsFilterForm' => $wordsListInfo['filterForm'],
+            'wordsPagination' => $wordsListInfo['pagination'],
+            'packagesFilterForm' => $packagesListInfo['filterForm'],
+            'packagesPagination' => $packagesListInfo['pagination']
+        ));
+    }
+
+
+    public function createWordsFilterAndPagination(Request $request, $dictionaryId){
+        $filterFormHandler = $this->get('app.filter_form_handler');
+        $filterForm = $filterFormHandler->createForm(
+            array(
+                'wordsFilterField' => 'spelling',
+                'wordsFilterValue' => ''
+            ),
+            array(
+                'field_field_name' => 'wordsFilterField',
+                'value_field_name' => 'wordsFilterValue'
+            )
+        );
+        $filterFormHandler->handleRequest($filterForm, $request);
+
+        $listQuery = $this->getRepository(DictionaryWordInfo::class)->createListQuery($dictionaryId); // by dictionary ID
+        $paginator = $this->get('knp_paginator');
+        $pagination = $paginator->paginate(
+            $listQuery,
+            $request->query->getInt('wordsPage', 1),
+            20,
+            array(
+                'filterFieldParameterName' => 'wordsFilterField',
+                'filterValueParameterName' => 'wordsFilterValue',
+                'pageParameterName' => 'wordsPage'
+            )
+        );
+
+        return array(
+            'filterForm' => $filterForm->createView(),
+            'pagination' => $pagination
+        );
+    }
+    public function createPackagesFilterAndPagination(Request $request, $dictionaryId){
+        $filterFormHandler = $this->get('app.filter_form_handler');
+        $filterForm = $filterFormHandler->createForm(
+            array(
+                'packagesFilterField' => 'name',
+                'packagesFilterValue' => ''
+            ),
+            array(
+                'field_field_name' => 'packagesFilterField',
+                'value_field_name' => 'packagesFilterValue'
+            )
+        );
+        $filterFormHandler->handleRequest($filterForm, $request);
+
+        $listQuery = $this->getRepository('AppBundle:Package')->createListQuery($dictionaryId); // by dictionary ID
+        $paginator = $this->get('knp_paginator');
+        $pagination = $paginator->paginate(
+            $listQuery,
+            $request->query->getInt('packagesPage', 1),
+            20,
+            array(
+                'filterFieldParameterName' => 'packagesFilterField',
+                'filterValueParameterName' => 'packagesFilterValue',
+                'pageParameterName' => 'packagesPage'
+            )
+        );
+
+        return array(
+            'filterForm' => $filterForm->createView(),
+            'pagination' => $pagination
+        );
+    }
+
+    /**
+     * @param Request $request
+     * @param $id
+     * @param $wordId
+     * @Route("/dictionary/{id}/word/{wordInfoId}", name="dictionary_word")
+     */
+    public function wordAction(Request $request, $id, $wordInfoId){
+        return new Response("word ".$wordInfoId);
+    }
+} 

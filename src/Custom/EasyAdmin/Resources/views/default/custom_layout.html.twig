@@ -3,13 +3,46 @@
 {% block head_stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" type="text/css" href="{{ asset('bundles/customeasyadmin/stylesheet/words-collection-theme.css') }}"/>
-    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/customeasyadmin/stylesheet/field-dictionary-loading.css') }}"/>
-    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/customeasyadmin/stylesheet/field-word-sound-file.css') }}"/>
-    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/customeasyadmin/stylesheet/common.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/customeasyadmin/stylesheet/field-dictionary-processing.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/customeasyadmin/stylesheet/field-word-pronounce.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/customeasyadmin/stylesheet/settings-background-images.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/customeasyadmin/stylesheet/layout.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/common.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/magnific-popup.css') }}"/>
 {% endblock head_stylesheets %}
 
 {% block body_javascript %}
     {{ parent() }}
+    <script src="{{ asset('js/recorder.js') }}"></script>
+    <script src="{{ asset('js/jquery.magnific-popup.min.js') }}"></script>
     <script src="{{ asset('bundles/customeasyadmin/javascript/words-collection-theme.js') }}"></script>
-    <script src="{{ asset('bundles/customeasyadmin/javascript/field-dictionary-loading.js') }}"></script>
+    <script src="{{ asset('bundles/customeasyadmin/javascript/field-dictionary-processing.js') }}"></script>
+    <script src="{{ asset('bundles/customeasyadmin/javascript/settings-background-images.js') }}"></script>
+
 {% endblock body_javascript %}
+
+ {% block header_logo %}
+     {% set site_name =  easyadmin_config('site_name')|trans|raw %}
+     <a class="logo {{ site_name|length > 14 ? 'logo-long' }}" title="{{ site_name|striptags }}" href="{{ path('easyadmin') }}">
+         {{ site_name|raw }}
+     </a>
+ {% endblock header_logo %}
+
+
+{% block header_custom_menu %}
+    {{ parent() }}
+
+    <ul class="nav navbar-nav navbar-locale-admin">
+        <li class="dropdown">
+            <button href="#" class="btn dropdown-toggle" data-toggle="dropdown">
+                {{ app.request.locale|slice(0,2)|upper }}
+                <span class="caret"></span>
+            </button>
+            {% set uri = '/change-locale/__locale__?back-uri=%s'|format(app.request.uri|e('url')) %}
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                <li><a href="{{ uri|replace({'__locale__':'ru'}) }}">{{ 'RU' }}</a></li>
+                <li><a href="{{ uri|replace({'__locale__':'en'}) }}">{{ 'EN' }}</a></li>
+            </ul>
+        </li>
+    </ul>
+{% endblock %}

@@ -1,0 +1,42 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Alexey Grigoriev
+ * Date: 09.01.2018
+ * Time: 12:19
+ */
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Class Word
+ * @package AppBundle\Model
+ * @ORM\Entity
+ */
+class WordPronounceAudioData
+{
+    const TYPE_URL = 1;
+    const TYPE_MIC_DATA = 2;
+    /**
+     * @var int
+     * @ORM\Id
+     * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    private $id;
+
+    /**
+     * @var string
+     * @ORM\Column(type="text")
+     */
+    private $data;
+
+    /**
+     * @var int
+     * @ORM\Column(type="smallint")
+     */
+    private $type;
+
+}

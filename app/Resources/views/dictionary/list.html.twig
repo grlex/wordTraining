@@ -2,12 +2,20 @@
 
 {% block title %}{{ 'title.dictionary_list'|trans }}{% endblock title %}
 {% block content %}
-    <h1>{{ block('title') }}</h1>
-    <ul class="list-unstyled">
-        {% for dictionary in dictionaries %}
-        <li>
-            <a href="{{ path('dictionary_words', { id: dictionary.id}) }}">{{ dictionary.name }}</a>
-        </li>
-        {% endfor %}
-    </ul>
+    <div class="row">
+        <h1 class="text-center heading">{{ block('title') }}</h1>
+        <div class="col-sm-offset-3 col-sm-6 col-md-offset-4 col-md-4">
+            {{ form(filterForm) }}
+            <ul class="list-unstyled list dictionaries-list">
+                {% for dictionary in pagination %}
+                <li>
+                    <a href="{{ path('dictionary_words', { id: dictionary.id}) }}">{{ dictionary.name }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+            <div class="navigation">
+                {{ knp_pagination_render(pagination) }}
+            </div>
+        </div>
+    </div>
 {% endblock content %}

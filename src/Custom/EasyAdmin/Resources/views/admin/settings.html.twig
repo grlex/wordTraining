@@ -1,0 +1,22 @@
+{% extends '@CustomEasyAdminBundle/Resources/views/default/custom_layout.html.twig' %}
+
+{% form_theme form 'bootstrap_3_layout.html.twig' %}
+{% form_theme form.backgroundImages '@CustomEasyAdminBundle/Resources/views/form/background_image_collection_theme.html.twig' %}
+
+
+{% block main %}
+    <h1>{{ 'settings.title'|trans }}</h1>
+
+
+    {{ form_start(form) }}
+    {{ form_row(form.underMaintenance) }}
+    {{ form_row(form.showBackgroundImages) }}
+    {{ form_row(form.backgroundImages) }}
+    <div class="form-group">
+        <button type="submit"
+                class="btn btn-primary"
+                onclick="$(this).closest('form').addClass('disabled')">{{ 'settings.form.save'|trans }}</button>
+    </div>
+    {{ form_end(form) }}
+
+{% endblock main %}

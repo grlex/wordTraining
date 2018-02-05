@@ -10,6 +10,9 @@ namespace Custom\EasyAdmin\Form;
 
 
 use AppBundle\Entity\Word;
+use AppBundle\Entity\WordPronounce;
+use AppBundle\Entity\WordTranscription;
+use AppBundle\Entity\WordTranslation;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
@@ -25,25 +28,45 @@ class WordType extends AbstractType {
     }
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('spelling', Type\TextType::class, array(
-            'label'=>'spell'
+        $builder->add('id', Type\HiddenType::class);
+        $builder->add('spelling', WordSpellingType::class, array(
+            'required' => true
         ));
+        $builder->add('translation', WordTranslationType::class, array());
+        $builder->add('transcription', WordTranscriptionType::class, array());
+        $builder->add('pronounce', WordPronounceType::class, array());
 
         $doctrine = $this->doctrine;
         $builder->addModelTransformer(new CallbackTransformer(
-            function (Word $word=null){
+            function (Word $word=null)  {
                 if(is_null($word)) $word = new Word();
                 return array(
-                    'spelling'=>$word->getSpelling()
+                    'id' => $word->getId(),
+                    'spelling'=>$word->getSpelling(),
+                    'translation' => $word->getTranslation(),
+                    'transcription' => $word->getTranscription(),
+                    'pronounce' => $word->getPronounce()
                 );
             },
             function (array $normData) use ($doctrine){
+
+                $id = $normData['id'];
                 $spelling = $normData['spelling'];
-                if(!$spelling) return null;
-                $word = $doctrine->getRepository('AppBundle:Word')->findOneBySpelling($spelling);
-                if(is_null($word)) {
-                    $word = new Word($spelling);
+                $translation = $normData['translation'];
+                $transcription = $normData['transcription'];
+                $pronounce = $normData['pronounce'];
+
+
+                $word = null;
+                if($id){
+                    $word = $doctrine->getRepository('AppBundle:Word')->find($id);
                 }
+                if(!$word) $word = new Word();
+                $word->setSpelling($spelling);
+                $word->setTranslation($translation);
+                $word->setTranscription($transcription);
+                $word->setPronounce($pronounce);
+
                 return $word;
             }
         ));

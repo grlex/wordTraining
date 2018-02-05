@@ -9,25 +9,16 @@
 namespace AppBundle\Entity;
 
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
-use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
-use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 /**
  * Class Word
  * @package AppBundle\Model
  * @ORM\Entity(repositoryClass="WordRepository")
- * @ORM\Table(name="word")
- * @UniqueEntity("spelling")
  * @ORM\HasLifecycleCallbacks()
- * @Vich\Uploadable
  */
 class Word {
-    const STATUS_PENDING = 1;
-    const STATUS_LOADING = 2;
-    const STATUS_INCORRECT = 3;
-    const STATUS_TRANSLATED = 4;
     /**
      * @var int
      * @ORM\Id
@@ -35,114 +26,55 @@ class Word {
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
+
     /**
-     * @var string
-     * @ORM\Column(type="string", length=50, unique=true)
+     * @var WordTranslation
+     * @ORM\ManyToOne(targetEntity="WordSpelling" , inversedBy="words", cascade={"persist"})
      */
     private $spelling;
+
     /**
-     * @var string
-     * @ORM\Column(type="string", length=50, nullable=true)
+     * @var WordTranslation
+     * @ORM\ManyToOne(targetEntity="WordTranslation" , inversedBy="words", cascade={"persist"} )
+     */
+    private $translation;
+
+    /**
+     * @var WordTranscription
+     * @ORM\ManyToOne(targetEntity="WordTranscription" , inversedBy="words", cascade={"persist"} )
      */
     private $transcription;
-    /**
-     * @var @var Translation[]
-     * @ORM\OneToMany(targetEntity="Translation", mappedBy="word", cascade={"persist", "remove"}, orphanRemoval=true)
-     */
-    private $translations;
-    /**
-     * @var Example[]
-     * @ORM\OneToMany(targetEntity="Example", mappedBy="word", cascade={"persist", "remove"}, orphanRemoval=true)
-     */
-    private $examples;
 
     /**
-     * @var Dictionary
-     * word is mapped side because it allows simpty add word to dictionary words's ArrayCollection
-     * and do nothing else due to dictionary is inversed (owning) side
-     * @ORM\ManyToMany(targetEntity="Dictionary", mappedBy="words")
+     * @var WordPronounce
+     * @ORM\ManyToOne(targetEntity="WordPronounce", inversedBy="words", cascade={"persist"} )
      */
-    private $dictionaries;
+    private $pronounce;
 
     /**
-     * @var string
-     * @ORM\Column(type="string", length=20, nullable=true)
+     * @var \Doctrine\Common\Collections\ArrayCollection
+     * @ORM\ManyToOne(targetEntity="Dictionary", inversedBy="words", cascade={"persist"})
      */
-    private $soundFilename;
-
-    /**
-     * @var File
-     * @Vich\UploadableField(mapping="word_sound", fileNameProperty="soundFilename")
-     */
-    private $soundFile;
-
-    /**
-     * @var \DateTime
-     * @ORM\Column(type="datetime")
-     */
-    private $updatedAt;
-
-    /**
-     * @var int
-     * @ORM\Column(type="smallint")
-     */
-    private $status;
-
-    /**
-     * @var WordForm[]
-     * @ORM\OneToMany(targetEntity="WordForm", mappedBy="word", cascade={"persist", "remove"})
-     */
-    private $forms;
-
+    private $dictionary;
 
 
     public function __toString(){
-        return $this->getSpelling();
+        return (string)$this->spelling; // WordSpelling::__toString()
     }
 
-
-
-    /**
-     * Constructor
-     */
-    public function __construct($spelling = null)
-    {
-        $this->dictionaries = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->translations = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->examples = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->forms = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->status = self::STATUS_PENDING;
-        $this->updatedAt = new \DateTime('now');
-        $this->setSpelling($spelling);
-    }
 
     /**
      * @ORM\PreRemove
      */
     public function preRemove(LifecycleEventArgs $eventArgs){
-        $dictionaries = $this->getDictionaries();
-        foreach($dictionaries as $dictionary){
-            $this->removeFromDictionary($dictionary);
-            // dictionary is attached to object manager when requested via Word::getDictionaries() method,
-            // so it will be updated automatically within the same transaction as the word removal will
+        if($this->dictionary){
+            $this->dictionary->removeWord($this);
         }
     }
 
-    public function setSoundFile(File $soundFile = null)
-    {
-        $this->soundFile = $soundFile;
 
-        if (null !== $soundFile) {
-            $this->updatedAt = new \DateTimeImmutable();
-        }
-        return $this;
-    }
-    public function getSoundFile(){
-        return $this->soundFile;
-    }
 
     /* ==========================   =============== */
-
 
 
     /**
@@ -158,13 +90,14 @@ class Word {
     /**
      * Set spelling
      *
-     * @param string $spelling
+     * @param \AppBundle\Entity\WordSpelling $spelling
      *
      * @return Word
      */
-    public function setSpelling($spelling)
+    public function setSpelling(\AppBundle\Entity\WordSpelling $spelling = null)
     {
-
+        if($this->spelling) $this->spelling->removeWord($this);
+        if($spelling) $spelling->addWord($this);
         $this->spelling = $spelling;
 
         return $this;
@@ -173,7 +106,7 @@ class Word {
     /**
      * Get spelling
      *
-     * @return string
+     * @return \AppBundle\Entity\WordSpelling
      */
     public function getSpelling()
     {
@@ -181,14 +114,42 @@ class Word {
     }
 
     /**
-     * Set transcription
+     * Set translation
      *
-     * @param string $transcription
+     * @param \AppBundle\Entity\WordTranslation $translation
      *
      * @return Word
      */
-    public function setTranscription($transcription)
+    public function setTranslation(\AppBundle\Entity\WordTranslation $translation = null)
     {
+        if($this->translation) $this->translation->removeWord($this);
+        if($translation) $translation->addWord($this);
+        $this->translation = $translation;
+
+        return $this;
+    }
+
+    /**
+     * Get translation
+     *
+     * @return \AppBundle\Entity\WordTranslation
+     */
+    public function getTranslation()
+    {
+        return $this->translation;
+    }
+
+    /**
+     * Set transcription
+     *
+     * @param \AppBundle\Entity\WordTranscription $transcription
+     *
+     * @return Word
+     */
+    public function setTranscription(\AppBundle\Entity\WordTranscription $transcription = null)
+    {
+        if($this->transcription) $this->transcription->removeWord($this);
+        if($transcription) $transcription->addWord($this);
         $this->transcription = $transcription;
 
         return $this;
@@ -197,7 +158,7 @@ class Word {
     /**
      * Get transcription
      *
-     * @return string
+     * @return \AppBundle\Entity\WordTranscription
      */
     public function getTranscription()
     {
@@ -205,193 +166,52 @@ class Word {
     }
 
     /**
-     * Add translation
+     * Set pronounce
      *
-     * @param \AppBundle\Entity\Translation $translation
+     * @param \AppBundle\Entity\WordPronounce $pronounce
      *
      * @return Word
      */
-    public function addTranslation(\AppBundle\Entity\Translation $translation)
+    public function setPronounce(\AppBundle\Entity\WordPronounce $pronounce = null)
     {
-        $translation->setWord($this);
-        $this->translations[] = $translation;
+        if($this->pronounce) $this->pronounce->removeWord($this);
+        if($pronounce) $pronounce->addWord($this);
+        $this->pronounce = $pronounce;
 
         return $this;
     }
 
     /**
-     * Remove translation
+     * Get pronounce
      *
-     * @param \AppBundle\Entity\Translation $translation
+     * @return \AppBundle\Entity\WordPronounce
      */
-    public function removeTranslation(\AppBundle\Entity\Translation $translation)
+    public function getPronounce()
     {
-        $translation->setWord(null);
-        $this->translations->removeElement($translation);
+        return $this->pronounce;
     }
 
     /**
-     * Get translations
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getTranslations()
-    {
-        return $this->translations;
-    }
-
-    /**
-     * Add example
-     *
-     * @param \AppBundle\Entity\Example $example
-     *
-     * @return Word
-     */
-    public function addExample(\AppBundle\Entity\Example $example)
-    {
-        $example->setWord($this);
-        $this->examples[] = $example;
-
-        return $this;
-    }
-
-    /**
-     * Remove example
-     *
-     * @param \AppBundle\Entity\Example $example
-     */
-    public function removeExample(\AppBundle\Entity\Example $example)
-    {
-        $example->setWord(null);
-        $this->examples->removeElement($example);
-    }
-
-    /**
-     * Get examples
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getExamples()
-    {
-        return $this->examples;
-    }
-
-    /**
-     * Add dictionary
+     * Set dictionary
      *
      * @param \AppBundle\Entity\Dictionary $dictionary
      *
      * @return Word
      */
-    public function addToDictionary(\AppBundle\Entity\Dictionary $dictionary)
+    public function setDictionary(\AppBundle\Entity\Dictionary $dictionary = null)
     {
-        $dictionary->addWord($this);
-        $this->dictionaries[] = $dictionary;
-        return $this;
-    }
-
-    /**
-     * Remove dictionary
-     *
-     * @param \AppBundle\Entity\Dictionary $dictionary
-     */
-    public function removeFromDictionary(\AppBundle\Entity\Dictionary $dictionary)
-    {
-        $dictionary->removeWord($this);
-        $this->dictionaries->removeElement($dictionary);
-    }
-
-    /**
-     * Get dictionaries
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getDictionaries()
-    {
-        return $this->dictionaries;
-    }
-
-
-    /**
-     * Set status
-     *
-     * @param integer $status
-     *
-     * @return Word
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
+        $this->dictionary = $dictionary;
 
         return $this;
     }
 
     /**
-     * Get status
+     * Get dictionary
      *
-     * @return integer
+     * @return \AppBundle\Entity\Dictionary
      */
-    public function getStatus()
+    public function getDictionary()
     {
-        return $this->status;
-    }
-
-    /**
-     * Set soundFilename
-     *
-     * @param string $soundFilename
-     *
-     * @return Word
-     */
-    public function setSoundFilename($soundFilename)
-    {
-        $this->soundFilename = $soundFilename;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSoundFilename()
-    {
-        return $this->soundFilename;
-    }
-
-
-    /**
-     * Add form
-     *
-     * @param \AppBundle\Entity\WordForm $form
-     *
-     * @return Word
-     */
-    public function addForm(\AppBundle\Entity\WordForm $form)
-    {
-        $form->setWord($this);
-        $this->forms[] = $form;
-
-        return $this;
-    }
-
-    /**
-     * Remove form
-     *
-     * @param \AppBundle\Entity\WordForm $form
-     */
-    public function removeForm(\AppBundle\Entity\WordForm $form)
-    {
-        $form->setWord(null);
-        $this->forms->removeElement($form);
-    }
-
-    /**
-     * Get forms
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getForms()
-    {
-        return $this->forms;
+        return $this->dictionary;
     }
 }

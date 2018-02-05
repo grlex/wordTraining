@@ -1,0 +1,44 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Alexey Grigoriev
+ * Date: 30.01.2018
+ * Time: 17:04
+ */
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Class Settings
+ * @package AppBundle\Entity
+ * @ORM\Entity(repositoryClass="SettingsRepository")
+ */
+class Settings {
+    const SETTING_UNDER_MAINTENANCE = 1;
+    const SETTING_SHOW_BACKGROUND_IMAGES = 2;
+    const SETTING_BACKGROUND_IMAGE = 3;
+
+    /**
+     * @var int
+     * @ORM\Id
+     * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    private $id;
+
+    /**
+     * @var string
+     * @ORM\Column(type="integer")
+     */
+    private $setting;
+
+    /**
+     * @var string
+     * @ORM\Column(type="string", length=100)
+     */
+    private $value;
+
+
+}

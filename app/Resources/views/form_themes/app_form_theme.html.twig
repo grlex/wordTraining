@@ -1,0 +1,16 @@
+{% extends 'bootstrap_3_horizontal_layout.html.twig' %}
+
+{% block _filterValue_row %}
+    <div class="input-group" >
+        <input  type="text"
+                name="{{ full_name }}"
+                class="form-control"
+                placeholder="{{ 'filter_placeholder'|trans }}"
+                value="{{ value }}">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="submit">
+              <span class="fa fa-search"></span>
+          </button>
+        </span>
+    </div>
+{% endblock _filterValue_row %}
