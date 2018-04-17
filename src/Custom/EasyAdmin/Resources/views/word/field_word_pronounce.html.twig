@@ -1,5 +1,5 @@
 {% set audio_enabled = value|default(false) and value.status == 1 %}
-<div class="word-pronounce-widget {{ audio_enabled ? '' : 'disabled' }}"
+<div class="widget word-pronounce-widget {{ audio_enabled ? '' : 'disabled' }}"
      onclick="$(this).filter(':not(.disabled)').children('audio').trigger('play')">
     <span   class="fa fa-volume-up">
     </span>

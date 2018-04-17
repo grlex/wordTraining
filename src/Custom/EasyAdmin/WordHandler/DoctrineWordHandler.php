@@ -30,13 +30,15 @@ class DoctrineWordHandler implements WordHandlerInterface {
     private $loader;
     private $eventDispatcher;
     private $soundDir;
+    private $pictureDir;
     private $waitingDelay;
     private $unavailableAttributeText;
-    public function __construct(Registry $doctrine, WordLoaderInterface $loader, $soundDir, EventDispatcherInterface $eventDispatcher=null, $waitingDelay = 2){
+    public function __construct(Registry $doctrine, WordLoaderInterface $loader, $soundDir, $pictureDir, EventDispatcherInterface $eventDispatcher=null, $waitingDelay = 2){
         $this->doctrine = $doctrine;
         $this->loader = $loader;
         $this->eventDispatcher = $eventDispatcher;
         $this->soundDir = $soundDir;
+        $this->pictureDir = $pictureDir;
         $this->waitingDelay = $waitingDelay;
         $this->unavailableAttributeText = '---';
     }
@@ -46,6 +48,9 @@ class DoctrineWordHandler implements WordHandlerInterface {
         $this->handleWordAttribute($word, $word->getTranslation());
         $this->handleWordAttribute($word, $word->getTranscription());
         $this->handleWordAttribute($word, $word->getPronounce());
+        foreach($word->getPictures() as $picture){
+            $this->handleWordAttribute($word, $picture);
+        }
     }
     private function handleWordAttribute(Word $word, WordAttribute $attribute=null){
         if(is_null($attribute)) return null;
@@ -67,6 +72,12 @@ class DoctrineWordHandler implements WordHandlerInterface {
                 break;
             case WordAttribute::STATUS_MIC:
                 $this->handleWordAttributeMicState($word, $attribute);
+                break;
+            case WordAttribute::STATUS_PICTURE_LINK:
+                $this->handleWordAttributePictureLinkState($word, $attribute);
+                break;
+            case WordAttribute::STATUS_PICTURE_LINK_LOADING:
+                $this->handleWordAttributePictureLinkLoadingState($word, $attribute);
                 break;
         }
     }
@@ -196,6 +207,86 @@ class DoctrineWordHandler implements WordHandlerInterface {
         $this->doctrine->getManager()->flush();
     }
 
+    private function handleWordAttributePictureLinkState(Word $word, WordAttribute $attribute){
+        $nowStatus = $this->doctrine->getManager()->getRepository(get_class($attribute))->getStatus($attribute->getId());
+        if($nowStatus==WordAttribute::STATUS_PICTURE_LINK){
+            $this->doctrine->getManager()->getRepository(get_class($attribute))->setStatus($attribute->getId(), WordAttribute::STATUS_PICTURE_LINK_LOADING);
+        }
+        else{
+            $this->doctrine->getManager()->refresh($attribute);
+            $this->handleWordAttribute($word, $attribute);
+            return;
+        }
+        $loadingAttempts = 0;
+        $success = true;
+        do {
+            $event = $this->dispatchTryLoadEvent($word, $attribute, ++$loadingAttempts);
+            if ($event->isAborted()) {
+                $this->doctrine->getManager()->getRepository(get_class($attribute))->setStatus($attribute->getId(), WordAttribute::STATUS_PICTURE_LINK);
+                throw new AbortedException();
+            }
+            try {
+                $url = $attribute->getUrl();
+                $pictureData = file_get_contents($url);
+                if($pictureData === false) {
+                    $success = false;
+                }
+
+                $filename = $word->getSpelling()->getText().'_'.md5($url);
+                $maybeFileame = array_pop(explode('/',parse_url($url, PHP_URL_PATH)));
+                $extensionWithDot = strrchr($maybeFileame,'.');
+                if(!$extensionWithDot) {
+                    $contentType = preg_grep('/^Content-Type/', $http_response_header);
+                    $contentType = trim(explode(':',array_pop($contentType))[1]);
+
+                    switch($contentType){
+                        case 'image/jpeg':
+                            $extensionWithDot = '.jpg';
+                            break;
+                        case 'image/bmp':
+                        case 'image/x-windows-bmp':
+                            $extensionWithDot = '.bmp';
+                            break;
+                        case 'image/png':
+                            $extensionWithDot = '.png';
+                            break;
+                        case 'image/gif':
+                            $extensionWithDot = '.gif';
+                            break;
+                    }
+                }
+                $filename.=$extensionWithDot;
+                $filepath = $this->pictureDir.'/'.$filename;
+                file_put_contents($filepath, $pictureData);
+                $attribute->setFilename($filename);
+            }
+            catch(\Exception $ex){
+                throw $ex;
+                continue;
+            }
+            break;
+        }while(true);
+        $attribute->setStatus($success ? WordAttribute::STATUS_DONE : WordAttribute::STATUS_UNAVAILABLE);
+        $this->doctrine->getManager()->persist($attribute);
+        $this->doctrine->getManager()->flush();
+    }
+    private function handleWordAttributePictureLinkLoadingState(Word $word, WordAttribute $attribute){
+        $waitingStartTime = time();
+        do{
+            $event = $this->dispatchWaitingEvent($word, $attribute, time()-$waitingStartTime);
+            if($event->isAborted()) {
+                throw new AbortedException();
+            }
+            sleep($this->waitingDelay);
+            $nowStatus = $this->doctrine->getManager()->getRepository(get_class($attribute))->getStatus($attribute->getId());
+            if($nowStatus==WordAttribute::STATUS_PICTURE_LINK_LOADING){
+                continue;
+            }
+            $this->doctrine->getManager()->refresh($attribute);
+            $this->handleWordAttribute($word, $attribute);
+            break;
+        }while(true);
+    }
 
     private function autoloadWordAttribute(Word $word, WordAttribute &$attribute){
         $wordSpelling = $word->getSpelling();
@@ -213,18 +304,19 @@ class DoctrineWordHandler implements WordHandlerInterface {
         }
         else if($attribute instanceof WordPronounce) {
             $attributeName = "Pronounce";
-            $loaderMethod = "loadAudioFile";
+            $loaderMethod = "loadPronounce";
         }
 
-        $autoAttribute = call_user_func([ $wordSpelling, 'getAuto'.$attributeName]);
+        /*$autoAttribute = call_user_func([ $wordSpelling, 'getAuto'.$attributeName]);
         if($autoAttribute) {
             $this->doctrine->getManager()->remove($attribute);
             $attribute = $autoAttribute;
             call_user_func([ $word, 'set'.$attributeName], $autoAttribute);
             return $autoAttribute->getStatus() != WordAttribute::STATUS_UNAVAILABLE;
-        }
+        }*/
 
         $text = call_user_func([$this->loader, $loaderMethod], $spellingText);
+
         if($text===false) {
             $unavailableAttribute = $this->doctrine->getManager()->getRepository(get_class($attribute))->findOneByStatus(WordAttribute::STATUS_UNAVAILABLE);
             if($unavailableAttribute){

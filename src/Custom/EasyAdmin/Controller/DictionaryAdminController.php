@@ -45,6 +45,7 @@ class DictionaryAdminController extends BaseAdminController {
                 return $this->newAction();
             }
             catch(UniqueConstraintViolationException $ex){
+                dump($ex);return new Response();
                 usleep(rand(1000,1000000));
                 $this->em = $this->getDoctrine()->resetmanager();
                 continue;
@@ -152,6 +153,7 @@ class DictionaryAdminController extends BaseAdminController {
     }
     private function startDictionaryProcessing(){
 
+        ini_set('max_execution_time', "0");
         $processingRepository = $this->em->getRepository(DictionaryProcessing::class);
         $processingId = $this->processingInfo->getId();
         $dictionary = $this->dictionary;

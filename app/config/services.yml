@@ -67,12 +67,19 @@ services:
             - '@doctrine'
             - '@app.word_loader'
             - '%kernel.project_dir%/web/%words_audio_web_dir%'
+            - '%kernel.project_dir%/web/%words_picture_web_dir%'
             - '@event_dispatcher'
 
+    app.image_searcher:
+        public: true
+        class: AppBundle\Service\GoogleImageSearcher
+        arguments:
+            - '%app.google_custom_engine_id%'
+            - '%app.google_custom_engine_key%'
 
 
     Custom\EasyAdmin\Form\WordType:
-        arguments: [ '@doctrine' ]
+        arguments: [ '@doctrine', '@app.image_searcher' ]
         tags: [ 'form.type' ]
     Custom\EasyAdmin\Form\WordSpellingType:
         arguments: [ '@doctrine' ]
@@ -86,4 +93,6 @@ services:
     Custom\EasyAdmin\Form\WordPronounceType:
         arguments: [ '@doctrine' ]
         tags: [ 'form.type' ]
-
+    Custom\EasyAdmin\Form\WordPictureType:
+        arguments: [ '@doctrine' ]
+        tags: [ 'form.type' ]

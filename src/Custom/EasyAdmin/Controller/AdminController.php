@@ -79,6 +79,22 @@ class AdminController extends BaseAdminController {
         return $qb;
     }
 
+    /**
+     * @param $term
+     * @Route("/image-search/{term}")
+     */
+    public function imageSearchAction($term){
+        $response = new JsonResponse();
+        try {
+            $images = $this->get('app.image_searcher')->search($term);
+            $response->setData($images);
+        }catch(\Exception $ex){
+            $response->setStatusCode(500);
+            $response->setData(array('result'=>$ex->getMessage()));
+        }
+        return $response;
+    }
+
 
 
 }

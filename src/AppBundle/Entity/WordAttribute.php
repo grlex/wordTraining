@@ -18,6 +18,8 @@ abstract class WordAttribute {
     const STATUS_LINK = 5;         // WordPronounce
     const STATUS_LINK_LOADING = 6; // WordPronounce
     const STATUS_MIC = 7;          // Word Pronounce
+    const STATUS_PICTURE_LINK = 8;        // WordPicture
+    const STATUS_PICTURE_LINK_LOADING = 9;// WordPicture
 
     /**
      * @var int

@@ -2,7 +2,7 @@
 
 {% block dictionary_view_controls %}
     <div class="text-center">
-        <div class="dropdown inline-block words-order-control">
+        <div class="dropdown inline-block control words-order-control">
             <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
                 {{ 'dictionary.view.exercise.words_sorting'|trans }}
                 <span class="caret"></span>
@@ -30,10 +30,10 @@
                 </li>
             </ul>
         </div>
-        <button class="btn btn-default restart-control">
+        <button class="btn btn-default control restart-control">
             {{ 'dictionary.view.exercise.restart'|trans }}
         </button>
-        <a  class="btn btn-default back-to-list-control"
+        <a  class="btn btn-default control back-to-list-control"
             href="{{ path('dictionary_words', app.request.query|merge({'id': dictionary.id})) }}">
             {{ 'dictionary.view.words_list'|trans }}
         </a>

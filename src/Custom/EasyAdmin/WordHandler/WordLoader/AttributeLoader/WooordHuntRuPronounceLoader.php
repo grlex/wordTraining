@@ -11,7 +11,7 @@ namespace Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader;
 use Custom\EasyAdmin\WordHandler\WordLoader\WordLoaderInterface;
 use Symfony\Component\HttpFoundation\File\File;
 
-class WooordHuntRuAudioFileLoader extends WooordHuntRuAttributeLoader {
+class WooordHuntRuPronounceLoader extends WooordHuntRuAttributeLoader {
     private $audioDir;
     public function __construct( $audioDir, AttributeLoaderContext $context = null){
         $this->audioDir = $audioDir;
@@ -35,8 +35,8 @@ class WooordHuntRuAudioFileLoader extends WooordHuntRuAttributeLoader {
         $audioUrl = 'http://wooordhunt.ru'.($crawlerAudio->first()->attr('src'));
         $audioFileData = file_get_contents($audioUrl);
         if($audioFileData === false) return false;
-        $filename = ($spelling ? $spelling.'_' : '');
-        $filename .= md5($audioUrl.uniqid('autoload_file', true));
+
+        $filename = $spelling.'_'.md5($audioUrl);
         $maybeURLFileame = array_pop(explode('/',parse_url($audioUrl, PHP_URL_PATH)));
         $extensionWithDot = strrchr($maybeURLFileame,'.');
         if($extensionWithDot) $filename.=$extensionWithDot;

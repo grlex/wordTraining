@@ -17,4 +17,5 @@
 /vendor/
 /web/bundles/
 /web/words-audio
+/web/words-picture
 /web/images/backgrounds/*

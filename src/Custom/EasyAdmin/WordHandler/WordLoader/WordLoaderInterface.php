@@ -26,5 +26,5 @@ interface WordLoaderInterface {
      * @param string $textSpelling
      * @return File
      */
-    public function loadAudioFile($textSpelling, $dialect = self::DIALECT_UK);
+    public function loadPronounce($textSpelling, $dialect = self::DIALECT_UK);
 }

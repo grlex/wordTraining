@@ -17,6 +17,7 @@ words_collection.word.transcription: Транскрипция
 words_collection.word.pronounce: Произношение
 words_collection.word.autoload: Загрузить поле автоматически
 words_collection.word.auto: Авто
+words_collection.word.pictures-list: Картинки
 
 
 dictionary_processing:
@@ -57,6 +58,24 @@ word_pronounce:
     microphone_record: Записать озвучку на микрофон
     enter_audio_url: Введите URL к файлу с озвучкой
     audio_url_invalid: Неправильный URL
+
+
+word_picture:
+  type:
+    unavailable: ---
+    no: Не задан
+    initial: Исходная
+    initial_loading: (Загружается)
+    file: Файл
+    link: Ссылка (URL)
+
+word_pictures:
+  title: Картинки
+  add: Добавить
+  available_pictures: Доступные картинки
+  chosen_pictures: Выбранные картинки
+  show_all: Показать все
+
 
 
 menu:

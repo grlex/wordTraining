@@ -90,7 +90,9 @@ main > .container > .row{
     padding: 1em 0;
 }
 
-
+.dictionary-view .controls .control{
+    margin: .5em 0;
+}
 
 .dictionary-view .attributes-visibility-control ul > li > a{
     padding-right: 1em;
@@ -105,9 +107,11 @@ main > .container > .row{
 .dictionary-view .attributes-visibility-control:not(.translation)  li.translation > a > .attribute-hidden,
 .dictionary-view .attributes-visibility-control.spelling  li.spelling > a > .attribute-visible,
 .dictionary-view .attributes-visibility-control.transcription  li.transcription > a > .attribute-visible,
-.dictionary-view .attributes-visibility-control.translation  li.translation > a > .attribute-visible{
+.dictionary-view .attributes-visibility-control.translation  li.translation > a > .attribute-visible,
+.dictionary-view .attributes-visibility-control.in-package  li.in-package > a > .attribute-visible{
     display: inline-block;
 }
+
 
 .dictionary-view .package-control button.add-new span{
     padding: .2em;
@@ -187,15 +191,40 @@ main > .container > .row{
 .dictionary-view ul.words-list li.word:nth-child(even) {
     background: #f3f3f3;
 }
-.dictionary-view .words-list .word .attribute:not(.pronounce){
-    position: relative;
+
+
+
+.dictionary-view .words-list .word .attribute.pronounce.pictures{
+    min-height: 3.5em;
+    padding: .7em .1em;
+    white-space: nowrap;
 }
 
-.dictionary-view .words-list .word .attribute.pronounce{
-    height: 3.5em;
-    padding-top: .7em;
-    padding-bottom: .7em;
+.dictionary-view .words-list .word .attribute.pronounce.pictures .widget {
+    display: inline-block;
+    vertical-align: top;
+    white-space: normal;
 }
+
+.dictionary-view .words-list .word .attribute.pronounce.pictures
+.word-pictures-widget .show-pictures .word-pictures-popup{
+    margin-top: 1em;
+    margin-left: 1em;
+    right: 3em;
+
+}
+
+@media screen and (min-width: 768px){
+    .dictionary-view .words-list .word .attribute.pronounce.pictures
+    .word-pictures-widget .show-pictures .word-pictures-popup{
+        margin-top: 1em;
+        right: auto;
+        margin-left: -390px;
+        width: 700px;
+    }
+}
+
+
 
 .dictionary-view .words-list .word .attribute.spelling .checker{
     position: absolute;
@@ -271,6 +300,9 @@ main > .container > .row{
 .dictionary-view .words-list.translation .word .translation .spy{
     opacity: 0;
     transition: opacity .5s;
+}
+.dictionary-view .words-list.in-package .word:not(.in-package){
+    display: none;
 }
 
 .dictionary-view .exercises-control ul li a .text {

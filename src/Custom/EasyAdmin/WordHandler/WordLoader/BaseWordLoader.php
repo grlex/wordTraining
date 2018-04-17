@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\File\File;
 abstract class BaseWordLoader implements WordLoaderInterface {
     protected $translationLoader;
     protected $transcriptionLoader;
-    protected $audioFileLoader;
+    protected $pronounceLoader;
 
     public function getTranslationLoader(){
         return $this->translationLoader;
@@ -29,8 +29,8 @@ abstract class BaseWordLoader implements WordLoaderInterface {
         return $this->transcriptionLoader;
     }
 
-    public function getAudioFileLoader(){
-        return $this->audioFileLoader;
+    public function getPronounceLoader(){
+        return $this->pronounceLoader;
     }
 
     public function loadTranslation($spelling){
@@ -45,9 +45,9 @@ abstract class BaseWordLoader implements WordLoaderInterface {
             :  $this->transcriptionLoader->load($spelling, $dialect);
     }
 
-    public function loadAudioFile($spelling = null, $dialect = self::DIALECT_UK){
-        return is_null($this->audioFileLoader)
+    public function loadPronounce($spelling = null, $dialect = self::DIALECT_UK){
+        return is_null($this->pronounceLoader)
             ? false
-            :  $this->audioFileLoader->load($spelling, $dialect);
+            :  $this->pronounceLoader->load($spelling, $dialect);
     }
 } 

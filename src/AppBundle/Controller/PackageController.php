@@ -135,7 +135,6 @@ class PackageController extends Controller
      */
     public function removeAction(Request $request, $id)
     {
-        sleep(10);
         $package = $this->getPackage($id);
         $user = $this->getUser();
         if($this->isGranted('ROLE_ADMIN') or $user->getId() == $package->getUser()->getId()) {

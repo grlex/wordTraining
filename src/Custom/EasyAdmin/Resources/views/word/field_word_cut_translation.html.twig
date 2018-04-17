@@ -1,4 +1,4 @@
-<div class="word-translation-widget">
+<div class="widget word-translation-widget">
     <span>
         {% if value|length > 40 %}
             {{  value|slice(41,1) == ',' ? value|slice(0,40) : value|slice(0,40)|split(',', -1)|join(',') }}

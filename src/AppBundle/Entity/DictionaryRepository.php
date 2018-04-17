@@ -41,10 +41,12 @@ class DictionaryRepository extends EntityRepository {
             ->createQueryBuilder()
             ->from(Word::class, 'w')
             ->select('w')
-            ->join('w.dictionary', 'd');
+            ->join('w.dictionary', 'd')
+            ->join('w.spelling', 'spelling');
         if(!is_null($id)) {
             $qb->where('d.id = :id')->setParameter(':id', $id);
         }
+
         return $qb->getQuery();
     }
 }

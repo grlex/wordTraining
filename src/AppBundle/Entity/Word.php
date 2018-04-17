@@ -52,6 +52,12 @@ class Word {
     private $pronounce;
 
     /**
+     * @var WordPicture
+     * @ORM\OneToMany(targetEntity="WordPicture", mappedBy="word", cascade={"persist", "remove"}, orphanRemoval=true )
+     */
+    private $pictures;
+
+    /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      * @ORM\ManyToOne(targetEntity="Dictionary", inversedBy="words", cascade={"persist"})
      */
@@ -191,6 +197,8 @@ class Word {
         return $this->pronounce;
     }
 
+
+
     /**
      * Set dictionary
      *
@@ -213,5 +221,46 @@ class Word {
     public function getDictionary()
     {
         return $this->dictionary;
+    }
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->pictures = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Add picture
+     *
+     * @param \AppBundle\Entity\WordPicture $picture
+     *
+     * @return Word
+     */
+    public function addPicture(\AppBundle\Entity\WordPicture $picture)
+    {
+        $this->pictures[] = $picture;
+
+        return $this;
+    }
+
+    /**
+     * Remove picture
+     *
+     * @param \AppBundle\Entity\WordPicture $picture
+     */
+    public function removePicture(\AppBundle\Entity\WordPicture $picture)
+    {
+        $this->pictures->removeElement($picture);
+    }
+
+    /**
+     * Get pictures
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getPictures()
+    {
+        return $this->pictures;
     }
 }

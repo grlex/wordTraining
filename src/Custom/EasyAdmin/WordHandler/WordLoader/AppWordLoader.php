@@ -11,7 +11,8 @@ namespace Custom\EasyAdmin\WordHandler\WordLoader;
 use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\AttributeLoaderContext;
 use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\ChainedLoader;
 use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\SplitTranscriptionLoader;
-use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\WooordHuntRuAudioFileLoader;
+use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\Text2SpeechOrgPronounceLoader;
+use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\WooordHuntRuPronounceLoader;
 use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\WooordHuntRuTranscriptionLoader;
 use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\WooordHuntRuTranslationLoader;
 use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\YandexApiTranslationLoader;
@@ -36,7 +37,13 @@ class AppWordLoader extends BaseWordLoader {
             new SplitTranscriptionLoader(new YandexSimpleTranscriptionLoader($yandexSimpleContext)),
             new SplitTranscriptionLoader(new WooordHuntRuTranscriptionLoader($wooordHuntRuContext))
         ));
-        $this->audioFileLoader = new WooordHuntRuAudioFileLoader($audioDir, $wooordHuntRuContext);
+
+        $this->pronounceLoader = new ChainedLoader(array(
+            new WooordHuntRuPronounceLoader($audioDir, $wooordHuntRuContext),
+            new Text2SpeechOrgPronounceLoader($audioDir)
+        ));
+
+
 
 
     }

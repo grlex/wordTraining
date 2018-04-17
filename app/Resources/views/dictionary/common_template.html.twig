@@ -11,51 +11,51 @@
             <div class="row controls">
                 {% block dictionary_view_controls %}
                     {% block exercises_control %}
-                        <div class="dropdown inline-block exercises-control">
-                        <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-                            {{ 'dictionary.view.exercises'|trans }}
-                            <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu">
-                            {% set class = 'AppBundle\\Controller\\DictionaryController' %}
-                            {% for label, exercise in {
-                                'choice.translation.from_spelling': constant(class ~ '::EXERCISE_CHOICE_TRANSLATION_FROM_SPELLING'),
-                                'choice.spelling.from_translation': constant(class ~ '::EXERCISE_CHOICE_SPELLING_FROM_TRANSLATION'),
-                                'choice.spelling.from_pronounce': constant(class ~ '::EXERCISE_CHOICE_SPELLING_FROM_PRONOUNCE'),
-                                'choice.translation.from_pronounce': constant(class ~ '::EXERCISE_CHOICE_TRANSLATION_FROM_PRONOUNCE'),
-                                'typing.spelling.from_translation': constant(class ~ '::EXERCISE_TYPING_SPELLING_FROM_TRANSLATION'),
-                                'typing.spelling.from_pronounce': constant(class ~ '::EXERCISE_TYPING_SPELLING_FROM_PRONOUNCE') }
-                            %}
-                                <li>
-                                    <a href="{{ path('dictionary_exercise', {
-                                                    id: dictionary.id,
-                                                    exercise: exercise,
-                                                    package_id: app.request.query.get('package_id', 'all-local')})
-                                    }}">
-                                        <span class="icon pull-right">
-                                            {% if loop.index in [1,2,5] %}
-                                                <span class="fa fa-font"></span>
-                                            {% else %}
-                                                <span class="fa fa-volume-up"></span>
-                                            {% endif %}
-                                            <span class="fa fa-long-arrow-right"></span>
-                                            {% if loop.index in [1,2,3,4] %}
-                                                <span class="fa fa-check-square-o"></span>
-                                            {% else %}
-                                                <span class="fa fa-pencil-square-o"></span>
-                                            {% endif %}
-                                        </span>
-                                        <span class="text">
-                                            {{ ('dictionary.view.exercise.title.' ~ label)|trans }}
-                                        </span>
-                                    </a>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
+                        <div class="dropdown inline-block control exercises-control">
+                            <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                                {{ 'dictionary.view.exercises'|trans }}
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                {% set class = 'AppBundle\\Controller\\DictionaryController' %}
+                                {% for label, exercise in {
+                                    'choice.translation.from_spelling': constant(class ~ '::EXERCISE_CHOICE_TRANSLATION_FROM_SPELLING'),
+                                    'choice.spelling.from_translation': constant(class ~ '::EXERCISE_CHOICE_SPELLING_FROM_TRANSLATION'),
+                                    'choice.spelling.from_pronounce': constant(class ~ '::EXERCISE_CHOICE_SPELLING_FROM_PRONOUNCE'),
+                                    'choice.translation.from_pronounce': constant(class ~ '::EXERCISE_CHOICE_TRANSLATION_FROM_PRONOUNCE'),
+                                    'typing.spelling.from_translation': constant(class ~ '::EXERCISE_TYPING_SPELLING_FROM_TRANSLATION'),
+                                    'typing.spelling.from_pronounce': constant(class ~ '::EXERCISE_TYPING_SPELLING_FROM_PRONOUNCE') }
+                                %}
+                                    <li>
+                                        <a href="{{ path('dictionary_exercise', {
+                                                        id: dictionary.id,
+                                                        exercise: exercise,
+                                                        package_id: app.request.query.get('package_id', 'all-local')})
+                                        }}">
+                                            <span class="icon pull-right">
+                                                {% if loop.index in [1,2,5] %}
+                                                    <span class="fa fa-font"></span>
+                                                {% else %}
+                                                    <span class="fa fa-volume-up"></span>
+                                                {% endif %}
+                                                <span class="fa fa-long-arrow-right"></span>
+                                                {% if loop.index in [1,2,3,4] %}
+                                                    <span class="fa fa-check-square-o"></span>
+                                                {% else %}
+                                                    <span class="fa fa-pencil-square-o"></span>
+                                                {% endif %}
+                                            </span>
+                                            <span class="text">
+                                                {{ ('dictionary.view.exercise.title.' ~ label)|trans }}
+                                            </span>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     {% endblock exercises_control %}
                     {% block package_control %}
-                        <div class="btn-group package-control">
+                        <div class="btn-group control package-control">
                             <button type="button"
                                     class="btn btn-default add-new"
                                     title="{{ 'dictionary.view.new_package'|trans }}"

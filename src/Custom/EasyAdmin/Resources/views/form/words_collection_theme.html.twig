@@ -34,6 +34,7 @@
     </div>
 {% endblock words_collection_header %}
 
+
 {% block words_collection_modals %}
 
     <div class="text-import modal fade" tabindex="-1" role="dialog">
@@ -144,6 +145,41 @@
         </div>
     </div>
 
+    <div id="pictures" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">
+                        {{ 'word_pictures.title'|trans }}
+                        <span class="title-word-spelling"></span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row header-line">
+                        <div class="col col-sm-6">{{ 'word_pictures.available_pictures'|trans }}</div>
+                        <div class="col col-sm-6">
+                            <button type="button" class="show-all animated-control">
+                                {{ 'word_pictures.show_all'|trans }}
+                                <span class="wait icon fa fa-spinner"></span>
+                                <span class="done icon fa fa-check"></span>
+                                <span class="fail icon fa fa-warning"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default cancel" data-dismiss="modal">
+                        {{ 'words_collection.modal.cancel'|trans }}
+                    </button>
+                    <button type="button" class="btn btn-primary accept">
+                        {{ 'words_collection.modal.accept'|trans }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock words_collection_modals %}
 
 
@@ -160,7 +196,7 @@
 {% endblock words_collection_filter %}
 
 {% block words_collection_file %}
-    <div class="words-file words-import">
+    <div class="words-file words-import animated-control">
         <input type="file"/>
         <button type="button" onclick="$(this).prev().click()">
             {{ 'words_collection.import_from_file'|trans }}
@@ -172,7 +208,7 @@
 {% endblock  words_collection_file %}
 
 {% block words_collection_text %}
-    <div class="words-text words-import">
+    <div class="words-text words-import animated-control">
         <button type="button">
             {{ 'words_collection.import_from_text'|trans }}
             <span class="icon wait fa fa-spinner"></span>
@@ -242,8 +278,8 @@
         {{ block('word_translation') }}
         {{ block('word_transcription') }}
         {{ block('word_pronounce') }}
+        {{ block('word_pictures') }}
         {{ block('words_collection_remove_action') }}
-
     </div>
     {% endspaceless %}
 {% endblock word_row %}
@@ -353,3 +389,54 @@
     </div>
 
 {% endblock word_pronounce %}
+
+{% block word_pictures %}
+    {% set picturesArePreloaded = form.pictures.vars.value|length > 0 %}
+    <div class="word-pictures word-attribute">
+
+        <div class="input-group">
+            <span class="input-group-addon">
+                <input type="checkbox"
+                       class="auto-checker"
+                       {{ picturesArePreloaded ? 'disabled' }}
+                       name="{{ form.picturesAuto.vars.full_name }}"
+                       title="{{ 'words_collection.word.autoload'|trans }}">
+            </span>
+            <span class="input-group-btn attribute-input">
+                 <button type="button"
+                         class="btn btn-default form-control show-pictures-modal"
+                         data-toggle="modal"
+                         data-target="#pictures.modal">
+                     {{ 'words_collection.word.pictures-list'|trans }}
+                 </button>
+            </span>
+            <input type="text"
+                   class="form-control auto-placeholder"
+                   disabled
+                   value="{{ 'words_collection.word.auto'|trans }}"/>
+        </div><!-- /input-group -->
+
+        <div class="cached-pictures {{ picturesArePreloaded ? 'preloaded' }}">
+            <ul class="list list-unstyled"
+                data-name="{{ form.pictures.vars.full_name }}">
+                {% for picture in form.pictures %}
+                    <li class="{{ picture.chosen.vars.value ? 'chosen' }}">
+                        <img src="{{ vich_uploader_asset(picture.vars.value, 'file', 'AppBundle\\Entity\\WordPicture') }}"
+                             alt="{{ picture.title.vars.value }}"
+                             title="{{ picture.title.vars.value }}"/>
+                        <div class="form-data">
+                            <input type="hidden"
+                                   name="{{ picture.id.vars.full_name }}"
+                                   value="{{ picture.id.vars.value }}"/>
+                            <input type="hidden"
+                                   class="chosen-input"
+                                   name="{{ picture.chosen.vars.full_name }}"
+                                   value="{{ picture.chosen.vars.value }}"/>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    </div>
+{% endblock word_pictures %}

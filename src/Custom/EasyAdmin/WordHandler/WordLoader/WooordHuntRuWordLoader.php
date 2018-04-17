@@ -10,7 +10,7 @@ namespace Custom\EasyAdmin\WordHandler\WordLoader;
 
 
 use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\AttributeLoaderContext;
-use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\WooordHuntRuAudioFileLoader;
+use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\WooordHuntRuPronounceLoader;
 use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\WooordHuntRuTranscriptionLoader;
 use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\WooordHuntRuTranslationLoader;
 
@@ -27,6 +27,6 @@ class WooordHuntRuWordLoader extends BaseWordLoader{
         $context = new AttributeLoaderContext($requestRateDelay, $timeCache);
         $this->translationLoader = new WooordHuntRuTranslationLoader($context);
         $this->transcriptionLoader = new SplitTranscriptionLoader(new WooordHuntRuTranscriptionLoader($context));
-        $this->audioFileLoader = new WooordHuntRuAudioFileLoader($audioDir, $context);
+        $this->pronounceLoader = new WooordHuntRuPronounceLoader($audioDir, $context);
     }
 }

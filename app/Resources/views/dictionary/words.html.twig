@@ -2,7 +2,7 @@
 
 
 {% block dictionary_view_controls %}
-    <div class="dropdown inline-block word-count-control">
+    <div class="dropdown inline-block control word-count-control">
         <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
             {{ 'dictionary.view.words_in_page'|trans }}
             {{ '(%s)'|format('dictionary.view.words_in_page_%count%'|trans({'%count%': wordsPagination.itemNumberPerPage})) }}
@@ -23,13 +23,13 @@
         </ul>
     </div>
 
-    <div class="dropdown inline-block attributes-visibility-control spelling transcription translation">
+    <div class="dropdown inline-block control attributes-visibility-control spelling transcription translation package">
         <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
             {{ 'dictionary.view.word_attributes_visibility'|trans }}
             <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
-            {% for attribute in ['spelling', 'transcription', 'translation'] %}
+            {% for attribute in ['spelling', 'transcription', 'translation', 'in-package'] %}
                 <li class="{{ attribute }}" data-attribute="{{ attribute }}">
                     <a href="#">
                         <span class="attribute-visible pull-right fa fa-eye"></span>
@@ -40,6 +40,8 @@
             {% endfor %}
         </ul>
     </div>
+
+    <button class="btn btn-default control shuffle-control">{{ 'dictionary.view.shuffle_words'|trans }}</button>
 
     {{ parent() }}
 {% endblock dictionary_view_controls %}
@@ -80,17 +82,18 @@
         <li class="col-sm-12 headers hidden-xs">
             <div class="header spelling col-sm-3"><span>{{ 'word.spelling'|trans }}</span></div>
             <div class="header transcription col-sm-3"><span>{{ 'word.transcription'|trans }}</span></div>
-            <div class="header pronounce col-sm-1"><span>{{ 'word.pronounce'|trans }}</span></div>
+            <div class="header pronounce col-sm-1"><span>{{ 'word.pronounce'|trans }}<br/>{{ 'word.pictures'|trans }}</span></div>
             <div class="header translation col-sm-5"><span>{{ 'word.translation'|trans }}</span></div>
         </li>
         {% set is_predefined_package = chosenPackage.id in ['all-local', 'all-global'] %}
         {% for word in wordsPagination %}
-            <li class="col-sm-12 word"
+            {% set in_package = is_predefined_package ? true: chosenPackage.hasWord(word) %}
+            <li class="col-sm-12 word {{ in_package ? 'in-package' }}"
                     data-word-id="{{ word.id }}">
                 <div class="row">
 
                     <div class="spelling attribute col-sm-3 coll-xs-9">
-                        {% set class = is_predefined_package ? 'disabled checked' : chosenPackage.hasWord(word) ? 'checked'  %}
+                        {% set class = is_predefined_package ? 'disabled checked' : in_package ? 'checked'  %}
                         <div class="checker package-entrance text-vertical-middle {{ class }}"
                                 title="{{ 'dictionary.view.bind_to_chosen_package'|trans }}">
                             <span class="icon checked fa fa-check-square-o"></span>
@@ -107,8 +110,9 @@
                         <span class="spy fa fa-eye"></span>
                         <span class="text">[ {{ word.transcription.text }} ]</span>
                     </div>
-                    <div class="pronounce attribute col-sm-1">
+                    <div class="pronounce pictures attribute col-sm-1">
                         {{ include('@CustomEasyAdminBundle/Resources/views/word/field_word_pronounce.html.twig', { value: word.pronounce }, with_context = false ) }}
+                        {{ include('@CustomEasyAdminBundle/Resources/views/word/field_word_pictures.html.twig', { value: word.pictures }, with_context = false ) }}
                     </div>
                     <div class="translation attribute col-sm-5">
                         <span class="spy fa fa-eye"></span>
@@ -135,169 +139,3 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-{#
-
-
-{% extends 'main_template.html.twig' %}
-
-{% block title %}
-    {{ 'title.dictionary_%name%'|trans({'%name%': dictionary.name }) }}
-{% endblock title %}
-
-{% block content %}
-    <div class="row dictionary-view">
-        <div class="col-md-8 col-md-offset-2">
-            <h1 class="row text-center">{{ block('title') }}</h1>
-            <div class="row controls">
-                <div class="dropdown inline-block word-count-control">
-                    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-                        {{ 'dictionary.view.words_in_page'|trans }}
-                        {{ '(%s)'|format('dictionary.view.words_in_page_%count%'|trans({'%count%': wordsPagination.itemNumberPerPage})) }}
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        {% set uri = '/dictionary/view/%d?pageSize=__count__'|format(dictionary.id) %}
-                        {% for count in [ 10, 20, 50, 'all'] %}
-                            <li>
-                                <a href="{{ uri|replace({'__count__':count}) }}">
-                                    {{  + count
-                                        ? 'dictionary.view.words_in_page_%count%'|trans({'%count%': count})
-                                        : 'dictionary.view.words_in_page_%count%'|replace({'%count%': count})|trans
-                                    }}
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-
-                <div class="dropdown inline-block attributes-visibility-control spelling transcription translation">
-                    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-                        {{ 'dictionary.view.word_attributes_visibility'|trans }}
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        {% for attribute in ['spelling', 'transcription', 'translation'] %}
-                            <li class="{{ attribute }}" data-attribute="{{ attribute }}">
-                                <a href="#">
-                                    <span class="attribute-visible pull-right fa fa-eye"></span>
-                                    <span class="attribute-hidden pull-right fa fa-eye-slash"></span>
-                                    {{ ('word.'~attribute)|trans }}
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-
-                <div class="dropdown inline-block exercises-control spelling transcription translation">
-                    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-                        {{ 'dictionary.view.exercises'|trans }}
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        {% set class = 'AppBundle\\Controller\\DictionaryController' %}
-                        {% for label, exercise in {
-                            'choice.translation.from_spelling': constant(class ~ '::EXERCISE_CHOICE_TRANSLATION_FROM_SPELLING'),
-                            'choice.spelling.from_translation': constant(class ~ '::EXERCISE_CHOICE_SPELLING_FROM_TRANSLATION'),
-                            'choice.spelling.from_pronounce': constant(class ~ '::EXERCISE_CHOICE_SPELLING_FROM_PRONOUNCE'),
-                            'typing.spelling.from_translation': constant(class ~ '::EXERCISE_TYPING_SPELLING_FROM_TRANSLATION'),
-                            'typing.spelling.from_pronounce': constant(class ~ '::EXERCISE_TYPING_SPELLING_FROM_PRONOUNCE') }
-                        %}
-                            <li>
-                                <a href="/dictionary/{{ dictionary.id }}/exercise/{{ exercise }}">
-                                    <span class="icon pull-right">
-                                        {% if loop.index in [1,2,4] %}
-                                            <span class="fa fa-font"></span>
-                                        {% else %}
-                                            <span class="fa fa-volume-up"></span>
-                                        {% endif %}
-                                        <span class="fa fa-long-arrow-right"></span>
-                                        {% if loop.index in [1,2,3] %}
-                                            <span class="fa fa-check-square-o"></span>
-                                        {% else %}
-                                            <span class="fa fa-pencil-square-o"></span>
-                                        {% endif %}
-                                    </span>
-                                    <span class="text">
-                                        {{ ('dictionary.view.exercise.' ~ label)|trans }}
-                                    </span>
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-            <div class="row">{{ form(wordsFilterForm) }}</div>
-            <div class="row">
-                <ul class="list-unstyled list words-list spelling transcription translation">
-                    {% for word in wordsPagination %}
-                        <li class="col-sm-12 word">
-                            <div class="row">
-                                <div class="spelling attribute col-sm-3 ">
-                                    <a href="#">
-                                        <span class="spy fa fa-eye"></span>
-                                        <span class="text">{{ word.spelling.text }}</span>
-                                    </a>
-                                </div>
-                                <div class="transcription attribute col-sm-3 ">
-                                    <span class="spy fa fa-eye"></span>
-                                    <span class="text">[ {{ word.transcription.text }} ]</span>
-                                </div>
-                                <div class="pronounce attribute col-sm-1">
-                                    {{ include('@CustomEasyAdminBundle/Resources/views/word/field_word_pronounce.html.twig', { item: word.pronounce }, with_context = false ) }}
-                                </div>
-                                <div class="translation attribute col-sm-5 ">
-                                    <span class="spy fa fa-eye"></span>
-                                    <span class="text">{{ word.translation.text }}</span>
-                                </div>
-                            </div>
-                        </li>
-                    {% else %}
-                        {{ 'notification.list_empty'|trans }}
-                    {% endfor %}
-                </ul>
-                <div class="navigation">
-                    {{ knp_pagination_render(wordsPagination) }}
-                </div>
-            </div>
-        </div>
-        <div class="external-source-modal modal fade" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title">{{ 'dictionary.view.external_source'|trans }}</h4>
-                    </div>
-                    <div class="modal-body">
-                        <ul class="list list-unstyles">
-                            <li class="yandex-source"><a target="_blank" href="#" >{{ 'dictionary.view.external_source_yandex'|trans }}</a></li>
-                            <li class="wooord-hunt-source"><a target="_blank" href="#">{{ 'dictionary.view.external_source_wooord_hunt'|trans }}</a></li>
-                        </ul>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-{% endblock content %}
-
-
-#}

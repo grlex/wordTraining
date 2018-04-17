@@ -16,7 +16,6 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  * Class Word
  * @package AppBundle\Model
  * @ORM\Entity(repositoryClass="WordRepository")
- * @UniqueEntity("spelling")
  * @ORM\HasLifecycleCallbacks()
  */
 class Word {
@@ -30,37 +29,43 @@ class Word {
 
     /**
      * @var WordTranslation
-     * @ORM\ManyToOne(targetEntity="WordSpelling" , inversedBy="words" )
+     * @ORM\ManyToOne(targetEntity="WordSpelling" , inversedBy="words", cascade={"persist"})
      */
     private $spelling;
 
     /**
      * @var WordTranslation
-     * @ORM\ManyToOne(targetEntity="WordTranslation" , inversedBy="words" )
+     * @ORM\ManyToOne(targetEntity="WordTranslation" , inversedBy="words", cascade={"persist"} )
      */
     private $translation;
 
     /**
      * @var WordTranscription
-     * @ORM\ManyToOne(targetEntity="WordTranscription" , inversedBy="words" )
+     * @ORM\ManyToOne(targetEntity="WordTranscription" , inversedBy="words", cascade={"persist"} )
      */
     private $transcription;
 
     /**
      * @var WordPronounce
-     * @ORM\ManyToOne(targetEntity="WordPronounce", inversedBy="words" )
+     * @ORM\ManyToOne(targetEntity="WordPronounce", inversedBy="words", cascade={"persist"} )
      */
     private $pronounce;
 
     /**
+     * @var WordPicture
+     * @ORM\OneToMany(targetEntity="WordPicture", mappedBy="word", cascade={"persist", "remove"} )
+     */
+    private $pictures;
+
+    /**
      * @var \Doctrine\Common\Collections\ArrayCollection
-     * @ORM\ManyToOne(targetEntity="Dictionary", inversedBy="words")
+     * @ORM\ManyToOne(targetEntity="Dictionary", inversedBy="words", cascade={"persist"})
      */
     private $dictionary;
 
 
     public function __toString(){
-        return $this->spelling; // WordSpelling::__toString()
+        return (string)$this->spelling; // WordSpelling::__toString()
     }
 
 
@@ -68,10 +73,8 @@ class Word {
      * @ORM\PreRemove
      */
     public function preRemove(LifecycleEventArgs $eventArgs){
-
-        $dictionaries = $this->getDictionaries();
-        foreach($dictionaries as $dictionary){
-            $dictionary->removeWord($this);
+        if($this->dictionary){
+            $this->dictionary->removeWord($this);
         }
     }
 
@@ -99,6 +102,8 @@ class Word {
      */
     public function setSpelling(\AppBundle\Entity\WordSpelling $spelling = null)
     {
+        if($this->spelling) $this->spelling->removeWord($this);
+        if($spelling) $spelling->addWord($this);
         $this->spelling = $spelling;
 
         return $this;
@@ -123,6 +128,8 @@ class Word {
      */
     public function setTranslation(\AppBundle\Entity\WordTranslation $translation = null)
     {
+        if($this->translation) $this->translation->removeWord($this);
+        if($translation) $translation->addWord($this);
         $this->translation = $translation;
 
         return $this;
@@ -147,6 +154,8 @@ class Word {
      */
     public function setTranscription(\AppBundle\Entity\WordTranscription $transcription = null)
     {
+        if($this->transcription) $this->transcription->removeWord($this);
+        if($transcription) $transcription->addWord($this);
         $this->transcription = $transcription;
 
         return $this;
@@ -171,6 +180,8 @@ class Word {
      */
     public function setPronounce(\AppBundle\Entity\WordPronounce $pronounce = null)
     {
+        if($this->pronounce) $this->pronounce->removeWord($this);
+        if($pronounce) $pronounce->addWord($this);
         $this->pronounce = $pronounce;
 
         return $this;
@@ -185,6 +196,8 @@ class Word {
     {
         return $this->pronounce;
     }
+
+
 
     /**
      * Set dictionary

@@ -158,6 +158,7 @@ class AbstractWordExercise {
             return;
         }
         if(this.currentWordIndex + 1 == this.words.length){
+            this.updateCounters();
             this.currentWordIndex += 1;
             this.questionBodyElem.hide();
             this.questionFinishElem.show().find('button').focus();
@@ -508,7 +509,7 @@ class WordChoiceExercise extends AbstractWordExercise{
                 word = this.words[(this.currentWordIndex + augment*i)%this.words.length];
                 choices.push(this.getAnswerText(word));
             }
-            choices.sort(function(first, second){ return Math.random()-0.5;});
+            choices.sort(function(left, right){ return Math.random()-0.4;});
             meta.answer = {
                 choices: choices,
                 chosenIndex: false
@@ -579,6 +580,7 @@ class WordChoiceExercise extends AbstractWordExercise{
                 .addClass(status=='success' ? 'ajax-ok' : 'ajax-fail');
             if(status=='success') {
                 checkerElem.toggleClass('checked');
+                checkerElem.closest('.word').toggleClass('in-package');
             }
             setTimeout(function(){
                 checkerElem.removeClass('ajax-ok ajax-fail disabled');
@@ -587,7 +589,17 @@ class WordChoiceExercise extends AbstractWordExercise{
         });
     });
 
-    $('.dictionary-view .attributes-visibility-control').on('click', 'ul > li > a', function(e){
+    $('.dictionary-view .shuffle-control').bind('click', function(e){
+        var wordsList = $(e.target).closest('.dictionary-view').find('.words-list');
+        var wordElems = wordsList.children('.word').detach().toArray().sort(function(left, right){
+            return Math.random()-0.5;
+        });
+        wordElems.forEach(function(wordElem){
+            wordsList.append(wordElem);
+        })
+    });
+
+    $('.dictionary-view .attributes-visibility-control').on('click', 'ul.dropdown-menu > li > a', function(e){
         e.preventDefault();
         var wordAttribute = $(e.target).closest('li').data('attribute');
         $(e.target).closest('.attributes-visibility-control').toggleClass(wordAttribute);
@@ -600,6 +612,8 @@ class WordChoiceExercise extends AbstractWordExercise{
         $(e.currentTarget).toggleClass('selected');
         window.wordExercise.orderWords(e.currentTarget.dataset.order);
     });
+
+
     $('.dictionary-view .restart-control').bind('click', function(e){
         window.wordExercise.start();
     });
@@ -651,9 +665,7 @@ class WordChoiceExercise extends AbstractWordExercise{
             url: e.target.form.action,
             data: formData,
             method: 'post',
-            statusCode: {
-                302: function(){ console.log(302); }
-            }
+            dataType: 'json'
         }).always(function(data, status, jqXHR){
             statusElem.removeClass('ajax-wait')
                 .addClass(status=='success' ? 'ajax-ok' : 'ajax-fail');
@@ -676,8 +688,10 @@ class WordChoiceExercise extends AbstractWordExercise{
                 statusElem.removeClass('ajax-ok ajax-fail');
                 if(status=='success') {
                     modalElem.modal('hide');
-                    //window.location.reload();
-                    console.log('always status: '+jqXHR.status)
+                    var query = window.location.search.replace(/package_id=(all|\d+)/, '');
+                    query += query.length ? '&' : '?';
+                    query += 'package_id='+data.id;
+                    window.location.href=window.location.pathname+query;
                 }
             },500);
 
