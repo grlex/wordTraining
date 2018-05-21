@@ -48,16 +48,8 @@ services:
         arguments:
             - '%kernel.project_dir%/web/%words_audio_web_dir%'
             - '%yandex_translator_api_key%'
+            - '%voice_rss_api_key%'
             - '%word_handler.request_rate_delay%'
-    app.wooord_hunt_ru_loader:
-        class: Custom\EasyAdmin\WordHandler\WordLoader\WooordHuntRuWordLoader
-        arguments:
-            - '%kernel.project_dir%/web/%words_audio_web_dir%'
-            - '%word_handler.request_rate_delay%'
-    app.yandex_translator_loader:
-        class: Custom\EasyAdmin\WordHandler\WordLoader\YandexWordLoader
-        arguments:
-             - '%word_handler.request_rate_delay%'
 
     app.word_handler:
         alias: 'Custom\EasyAdmin\WordHandler\DoctrineWordHandler'
@@ -96,3 +88,6 @@ services:
     Custom\EasyAdmin\Form\WordPictureType:
         arguments: [ '@doctrine' ]
         tags: [ 'form.type' ]
+
+    Custom\EasyAdmin\Form\Type\Configurator\DisableByRefConfigurator:
+        tags: ['easyadmin.form.type.configurator']

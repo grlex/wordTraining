@@ -40,8 +40,7 @@ class Dictionary {
 
     /**
      * @var Word[]
-     * @ORM\ManyToMany(targetEntity="Word", mappedBy="dictionaries", cascade={"persist", "remove", "merge", "detach"})
-     * @ORM\OrderBy({"spelling" = "ASC"})
+     * @ORM\OneToMany(targetEntity="Word", mappedBy="dictionary", cascade={"persist", "remove", "merge", "detach"}, orphanRemoval=true)
      */
     private $words;
 
@@ -52,11 +51,10 @@ class Dictionary {
     private $processingInfo;
 
     /**
-     * @var Package
-     * @ORM\OneToMany(targetEntity="Package", mappedBy="dictionary", cascade={"persist", "remove"})
+     * @var Group
+     * @ORM\ManyToOne(targetEntity="Group", inversedBy="dictionaries")
      */
-    private $packages;
-
+    private $group;
 
 
     public function __toString(){
@@ -69,9 +67,13 @@ class Dictionary {
      */
     public function __construct()
     {
+        $this->processingInfo = new DictionaryProcessing();
+        $this->processingInfo->setDictionary($this);
         $this->words = new \Doctrine\Common\Collections\ArrayCollection();
         $this->packages = new \Doctrine\Common\Collections\ArrayCollection();
     }
+
+
 
 
     /* ========================  ================== */
@@ -138,44 +140,6 @@ class Dictionary {
         return $this->processingInfo;
     }
 
-    /**
-     * Add package
-     *
-     * @param Package $package
-     *
-     * @return Dictionary
-     */
-    public function addPackage(Package $package)
-    {
-        $package->setDictionary($package);
-        $this->packages[] = $package;
-        return $this;
-    }
-
-    /**
-     * Remove package
-     *
-     * @param Package $package
-     *
-     * @return Dictionary
-     */
-    public function removePackage(Package $package)
-    {
-        $package->setDictionary(null);
-        $this->packages->removeElement($package);
-        return $this;
-    }
-
-    /**
-     * Get packages
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getPackages()
-    {
-        return $this->packages;
-    }
-
 
     /**
      * Add dictionary word
@@ -186,12 +150,12 @@ class Dictionary {
      */
     public function addWord(Word $word)
     {
-        $word->addDictionary($this);
+        $word->setDictionary($this);
         $this->words->add($word);
-        $total = $this->processingInfo->getTotal();
+        /*$total = $this->processingInfo->getTotal();
         $this->processingInfo->setTotal(++$total);
-        $this->processingInfo->setStatus(DictionaryProcessing::STATUS_PENDING);
-
+        $this->processingInfo->setProcessed(0);
+        $this->processingInfo->setStatus(DictionaryProcessing::STATUS_PENDING);*/
         return $this;
     }
 
@@ -202,12 +166,12 @@ class Dictionary {
      */
     public function removeWord(Word $word)
     {
-        $word->removeDictionary($this);
+        $word->setDictionary(null);
         $this->words->removeElement($word);
-        $total = $this->processingInfo->getTotal();
+        /*$total = $this->processingInfo->getTotal();
         $this->processingInfo->setTotal(--$total);
-        $processed = $this->processingInfo->getProcessed();
-        $this->processingInfo->setProcessed($processed>$total ? $total : $processed );
+        $this->processingInfo->setProcessed(0);
+        $this->processingInfo->setStatus(DictionaryProcessing::STATUS_PENDING);*/
     }
 
     /**

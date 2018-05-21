@@ -111,6 +111,9 @@
     #background: transparent;
 }
 
+.words-collection .word .word-attribute .attribute-input{
+    width: 100%;
+}
 .words-collection .word .word-attribute.auto .attribute-input,
 .words-collection .word .word-attribute:not(.auto) .auto-placeholder{
     display: none;
@@ -167,29 +170,21 @@
     padding-bottom: 1em;
     padding-left: 1em;
 }
-.words-collection .words-import .icon.wait,
-.words-collection .words-import .icon.done,
-.words-collection .words-import .icon.fail{
-    display: none;
-}
-.words-collection .words-import.wait .icon.wait{
-    display: inline-block;
-    color: blue;
-    animation: rotateAnimation 1s linear infinite;
-}
-.words-collection .words-import.done .icon.done{
-    display: inline-block;
-    color: green;
-}
-.words-collection .words-import.fail .icon.fail{
-    display: inline-block;
-    color: red;
-}
+
 
 .words-collection .words-file input{
     display: none;
 }
 
+.words-collection .all-auto-checker{
+    padding-bottom: 1em;
+    padding-left: 1em;
+    position: relative;
+}
+.words-collection .all-auto-checker .dropdown-menu{
+    top: 2em;
+    left: 1em;
+}
 
 .words-collection .modal .modal-body{
     position: relative;
@@ -256,7 +251,61 @@
     margin-left: 5em;
 }
 
+/* pictures */
+.words-collection .word .word-attribute.word-pictures .cached-pictures{
+    display: none;
+}
 
+.words-collection .modal#pictures .modal-body .list{
+    padding: 1em;
+    border: 2px solid gray;
+    max-height: 20em;
+    overflow-y: scroll;
+}
+.words-collection .modal#pictures .modal-body .list li{
+    display: inline-block;
+    padding: .2em;
+    position: relative;
+}
 
+.words-collection .modal#pictures .modal-body .list li .remove{
+    position: absolute;
+    top: .1em;
+    right:.1em;
+    padding: .3em;
+    background: #f5f5f5;
+    color: maroon;
+    opacity: .5;
+    cursor: pointer;
+}
+.words-collection .modal#pictures .modal-body .list li .remove:hover{
+    opacity: .8;
+    color: red;
+}
 
+.words-collection .modal#pictures .modal-body .list li img{
+    max-width: 100px;
+    max-height: 100px;
+    display: block;
+    border: 2px solid transparent;
+}
+.words-collection .modal#pictures .modal-body .list li.selected img{
+    max-width: 100px;
+    max-height: 100px;
+    border-color: red;
+}
+.words-collection .modal#pictures .modal-header .title-word-spelling{
+    font-weight: bold;
+}
+.words-collection .modal#pictures .header-line .col{
+    padding: 1em;
+}
 
+.words-collection .modal#pictures .header-line .input-group,
+.words-collection .modal#pictures .header-line .input-group .input-group-btn {
+    width: auto;
+    display: inline-block;
+}
+.words-collection .modal#pictures .header-line .input-group input{
+    max-width: 60%;
+}

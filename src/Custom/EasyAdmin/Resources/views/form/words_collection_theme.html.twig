@@ -29,10 +29,26 @@
         {{ block('words_collection_filter') }}
         {{ block('words_collection_file') }}
         {{ block('words_collection_text') }}
+        {{ block('words_collection_all_checker') }}
         {{ block('words_collection_new_word_container') }}
         {{ block('words_collection_modals') }}
     </div>
 {% endblock words_collection_header %}
+
+{% block words_collection_all_checker %}
+    <div class="all-auto-checker dropdown">
+        <button class="dropdown-toggle" type="button" data-toggle="dropdown">
+            {{ 'words_collection.autoload_all_attributes'|trans }}
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li data-attribute="translation"><a href="#">{{ 'Translation'|trans }}</a></li>
+            <li data-attribute="transcription"><a href="#">{{ 'Transcription'|trans }}</a></li>
+            <li data-attribute="pronounce"><a href="#">{{ 'Pronounce'|trans }}</a></li>
+            <li data-attribute="pictures"><a href="#">{{ 'Pictures'|trans }}</a></li>
+        </ul>
+    </div>
+{% endblock words_collection_all_checker %}
 
 
 {% block words_collection_modals %}
@@ -157,13 +173,23 @@
                 </div>
                 <div class="modal-body">
                     <div class="row header-line">
-                        <div class="col col-sm-6">{{ 'word_pictures.available_pictures'|trans }}</div>
-                        <div class="col col-sm-6">
-                            <button type="button" class="show-all animated-control">
-                                {{ 'word_pictures.show_all'|trans }}
-                                <span class="wait icon fa fa-spinner"></span>
-                                <span class="done icon fa fa-check"></span>
-                                <span class="fail icon fa fa-warning"></span>
+                        <div class="col col-sm-4">{{ 'word_pictures.available_pictures'|trans }}</div>
+                        <div class="col col-sm-5">
+                            <div class="input-group">
+                                <input type="text" class="context form-control" placeholder="{{ 'word_pictures.context'|trans }}">
+                                <span class="input-group-btn">
+                                  <button class="btn btn-default search animated-control" type="button">
+                                      {{ 'word_pictures.search'|trans }}
+                                      <span class="icon wait fa fa-spinner"></span>
+                                      <span class="icon done fa fa-check"></span>
+                                      <span class="icon fail fa fa-warning"></span>
+                                  </button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col col-sm-3">
+                            <button type="button" class="add">
+                                {{ 'word_pictures.add'|trans }}
                             </button>
                         </div>
                     </div>
@@ -272,6 +298,7 @@
 {% block word_row %}
     {% spaceless %}
     <div id="{{ form.vars.id }}" class="word">
+        {{ form.id.vars.value }}
         <input type="hidden" name="{{ form.id.vars.full_name }}" value="{{ form.id.vars.value }}"/>
         {#{ block('expanded_edit') }#}
         {{ block('word_spelling') }}
@@ -432,6 +459,10 @@
                                    class="chosen-input"
                                    name="{{ picture.chosen.vars.full_name }}"
                                    value="{{ picture.chosen.vars.value }}"/>
+                            <input type="hidden"
+                                   class="url"
+                                   name="{{ picture.url.vars.full_name }}"
+                                   value="{{ picture.url.vars.value }}"/>
                         </div>
                     </li>
                 {% endfor %}

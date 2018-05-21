@@ -12,6 +12,7 @@ use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\AttributeLoaderConte
 use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\ChainedLoader;
 use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\SplitTranscriptionLoader;
 use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\Text2SpeechOrgPronounceLoader;
+use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\VoiceRssOrgPronounceLoader;
 use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\WooordHuntRuPronounceLoader;
 use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\WooordHuntRuTranscriptionLoader;
 use Custom\EasyAdmin\WordHandler\WordLoader\AttributeLoader\WooordHuntRuTranslationLoader;
@@ -22,7 +23,8 @@ use Psr\SimpleCache\CacheInterface;
 
 class AppWordLoader extends BaseWordLoader {
     public function __construct( $audioDir,
-                                 $apiKey = null,
+                                 $yandexApiKey = null,
+                                 $voiceRssApiKey = null,
                                  $requestRateDelay = 2,
                                  CacheInterface $yandexLoaderTimestampCache = null,
                                  CacheInterface $wordHuntLoaderTimestampCache = null)
@@ -31,20 +33,18 @@ class AppWordLoader extends BaseWordLoader {
         $yandexSimpleContext = new AttributeLoaderContext($requestRateDelay, $yandexLoaderTimestampCache);
         $translationLoaders = array();
         $translationLoaders[] = new YandexSimpleTranslationLoader($yandexSimpleContext);
-        if($apiKey) $translationLoaders[] = new YandexApiTranslationLoader($apiKey);
+        if($yandexApiKey) $translationLoaders[] = new YandexApiTranslationLoader($yandexApiKey);
         $this->translationLoader = new ChainedLoader($translationLoaders);
         $this->transcriptionLoader = new ChainedLoader(array(
             new SplitTranscriptionLoader(new YandexSimpleTranscriptionLoader($yandexSimpleContext)),
             new SplitTranscriptionLoader(new WooordHuntRuTranscriptionLoader($wooordHuntRuContext))
         ));
 
-        $this->pronounceLoader = new ChainedLoader(array(
-            new WooordHuntRuPronounceLoader($audioDir, $wooordHuntRuContext),
-            new Text2SpeechOrgPronounceLoader($audioDir)
-        ));
-
-
-
-
+        $pronounceLoaders = array();
+        $pronounceLoaders[] = new WooordHuntRuPronounceLoader($audioDir, $wooordHuntRuContext);
+        if($voiceRssApiKey) $pronounceLoaders[] = new VoiceRssOrgPronounceLoader($audioDir, $voiceRssApiKey);
+        $this->pronounceLoader = new ChainedLoader($pronounceLoaders);
     }
+
+
 } 

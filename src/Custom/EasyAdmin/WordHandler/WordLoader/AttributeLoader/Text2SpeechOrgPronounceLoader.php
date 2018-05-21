@@ -32,7 +32,8 @@ class Text2SpeechOrgPronounceLoader implements WordAttributeLoaderInterface {
     public function load($spelling, $dialect=WordLoaderInterface::DIALECT_UK){
         $this->context->takeRequestRateDelay();
         $this->formParams['text'] = $spelling;
-        $this->client->request('post', 'http://www.text2speech.org/', $this->formParams);
+        $this->client->request('post', 'https://www.text2speech.org/', $this->formParams);
+
 
         $response = $this->client->getResponse();
         if($response->getStatus() !== 200) return false;

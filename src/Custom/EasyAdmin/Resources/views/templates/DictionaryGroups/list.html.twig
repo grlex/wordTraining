@@ -1,0 +1,191 @@
+{% extends "@EasyAdminBundle/Resources/views/default/list.html.twig" %}
+
+{% block main %}
+    <div class="groups-table-overlay animated-control">
+        <span class="wait icon fa fa-spinner"></span>
+        <span class="done icon fa fa-check"></span>
+        <span class="fail icon fa fa-warning"></span>
+    </div>
+    {{ parent() }}
+{% endblock main %}
+
+{% block table_body %}
+    {% for item in paginator.currentPageResults %}
+        {% set dive_level = '' %}
+        {% set parent_id = 'root' %}
+        {% block item_row %}
+            {# the empty string concatenation is needed when the primary key is an object (e.g. an Uuid object) #}
+            {% set _item_id = '' ~ attribute(item, _entity_config.primary_key_field_name) %}
+            <tr class="group-row {{ (loop.first ? 'first ') ~ (loop.last ? 'last') }}"
+                data-id="{{ _item_id }}"
+                data-parent-id="{{ parent_id }}"
+                    >
+                {% for field, metadata in fields %}
+                    {% set isSortingField = metadata.property == app.request.get('sortField') %}
+                    {% set _column_label =  (metadata.label ?: field|humanize)|trans(_trans_parameters)  %}
+                    {% set isTitleField = metadata.property == 'title' %}
+                    <td data-label="{{ _column_label }}"
+                        class="{{ isSortingField ? 'sorted' }}
+                               {{ isTitleField ? 'title-col' }}
+                               {{ metadata.dataType|lower }}
+                               {{ metadata.css_class }}">
+                        {% if metadata.property == 'title' %}
+                            {{ dive_level|raw }}
+                            {% if  item.children|length > 0 %}
+                                <a class="folder" href="#"><span class="fa fa-folder-open-o"></span></a>
+                            {% else %}
+                                <span class="folder-placeholder"></span>
+                            {% endif %}
+                        {% endif %}
+                        {{ easyadmin_render_field_for_list_view(_entity_config.name, item, metadata) }}
+
+                    </td>
+                {% endfor %}
+
+                {% if _list_item_actions|length > 0 %}
+                    {% set _column_label =  'list.row_actions'|trans(_trans_parameters, 'EasyAdminBundle') %}
+                    <td data-label="{{ _column_label }}" class="actions">
+                        {% block item_actions %}
+                            {{ include('@EasyAdmin/default/includes/_actions.html.twig', {
+                            actions: _list_item_actions,
+                            request_parameters: _request_parameters,
+                            translation_domain: _entity_config.translation_domain,
+                            trans_parameters: _trans_parameters,
+                            item_id: _item_id
+                            }, with_context = false) }}
+                        {% endblock item_actions %}
+                    </td>
+                {% endif %}
+            </tr>
+            {% set parent_id = parent_id ~ ' ' ~ _item_id %}
+            {% set dive_level = dive_level ~ '&nbsp*&nbsp' %}
+            {% for item in item.children %}
+                {{ block('item_row') }}
+            {% endfor %}
+        {% endblock item_row %}
+
+    {% else %}
+        <tr>
+            <td class="no-results" colspan="{{ _list_item_actions|length > 0 ? fields|length + 1 : fields|length }}">
+                {{ 'search.no_results'|trans(_trans_parameters, 'EasyAdminBundle') }}
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock table_body %}
+
+
+{% block body_javascript %}
+    {{ parent() }}
+
+    <script type="text/javascript">
+        $(function() {
+
+            $('.action-delete').on('click', function(e) {
+                e.preventDefault();
+                var id = $(this).closest('tr.group-row').data('id');
+
+                $('#modal-delete').modal({ backdrop: true, keyboard: true })
+                        .off('click', '#modal-delete-button')
+                        .on('click', '#modal-delete-button', function () {
+                            var deleteForm = $('#delete-form');
+                            deleteForm.attr('action', deleteForm.attr('action').replace('__id__', id));
+                            deleteForm.trigger('submit');
+                        });
+            });
+
+
+            function getReorderingRows(action){
+                var rowAbove, rowBelow;
+                if(action.hasClass('action-up')){
+                    rowBelow = action.closest('.group-row');
+                    if(rowBelow.hasClass('first')) return false;
+                    rowAbove = rowBelow.prevAll(".group-row[data-parent-id='"+rowBelow.data("parent-id")+"']").first();
+                }
+                else{
+                    rowAbove = action.closest('.group-row');
+                    if(rowAbove.hasClass('last')) return false;
+                    rowBelow = rowAbove.nextAll(".group-row[data-parent-id='"+rowAbove.data("parent-id")+"']").first();
+                }
+                return {
+                    above: rowAbove,
+                    below: rowBelow
+                }
+            }
+            function finishReordering(rows){
+                if(rows.below.hasClass('last')){
+                    rows.below.removeClass('last');
+                    rows.above.addClass('last');
+                }
+                if(rows.above.hasClass('first')){
+                    rows.above.removeClass('first');
+                    rows.below.addClass('first');
+                }
+                var childGroupRows = rows.below.nextAll(".group-row[data-parent-id~="+rows.below.data("id")+"]");
+                rows.below.insertBefore(rows.above);
+                childGroupRows.insertAfter(rows.below);
+            }
+            var tableOverlay = $('.groups-table-overlay');
+            tableOverlay.prependTo(tableOverlay.next('.table-responsive'));
+            $('.action-up, .action-down').on('click', function(e){
+                e.preventDefault();
+                var rows = getReorderingRows($(this));
+                if(!rows) return;
+                var groups = {
+                    group1: rows.above.data('id'),
+                    group2: rows.below.data('id')
+                };
+
+                tableOverlay.show().addClass('wait');
+                $.post('/admin/?action=reorder&entity=DictionaryGroup', groups)
+                    .done(function(){
+                        tableOverlay.removeClass('wait').addClass('done')
+                                .delay(300).fadeOut('fast', function(){
+                                    finishReordering(rows);
+                                    tableOverlay.removeClass('done');
+                                });
+                    })
+                    .fail(function(){
+                        tableOverlay.removeClass('wait').addClass('fail')
+                                .delay(1000).fadeOut('slow', function(){
+                                    tableOverlay.removeClass('fail');
+                                });
+                    });
+            });
+
+
+            $('.group-row .folder').on('click', function(e) {
+                e.preventDefault();
+                var foldingGroupRow = $(this).closest('.group-row').toggleClass('collapsed');
+
+                var childGroupRows = foldingGroupRow.nextAll(".group-row[data-parent-id~="+foldingGroupRow.data("id")+"]");
+                if(foldingGroupRow.hasClass('collapsed')){
+                    childGroupRows.addClass('hidden');
+                }
+                else{
+                    childGroupRows.removeClass('hidden');
+                    childGroupRows.filter('.collapsed').each(function(index, row){
+                        $(row).nextAll(".group-row[data-parent-id~="+row.dataset.id+"]").addClass('hidden');
+                    });
+                }
+
+
+
+
+
+                $(this).children('.fa').toggleClass('fa-folder-open-o fa-folder-o');
+
+            });
+
+        });
+    </script>
+
+
+
+    {% if 'search' == app.request.get('action') %}
+        <script type="text/javascript">
+            var _search_query = "{{ app.request.get('query')|default('')|e('js') }}";
+            // the original query is prepended to allow matching exact phrases in addition to single words
+            $('#main').find('ul').highlight($.merge([_search_query], _search_query.split(' ')));
+        </script>
+    {% endif %}
+{% endblock %}

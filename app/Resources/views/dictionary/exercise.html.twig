@@ -78,6 +78,10 @@
                         {% endif %}
                     </div>
                     <div class="question-footer">
+                        <div class="pronounce-transcription-hint text-center clearfix">
+                            <span class="viewer fa fa-eye pull-left">{{ 'dictionary.view.exercise.transcription-hint'|trans }}</span>
+                            <span class="text pull-right"></span>
+                        </div>
                     </div>
                 </div>
                 {% endspaceless %}
@@ -133,14 +137,15 @@
         var words = [
             {% for word in chosenPackage.words %}
             {
-                spelling: '{{ word.spelling.text }}',
-                translation: '{{ word.translation.text }}',
-                transcription: '{{ word.transcription.text }}',
+                spelling: '{{ word.spelling.text|e('js') }}',
+                translation: '{{ word.translation.text|e('js') }}',
+                transcription: '{{ word.transcription.text|e('js') }}',
                 audioURL:  '{{ word.pronounce ? vich_uploader_asset(word.pronounce, 'audioFile')|replace({' ':'%20'}) }}'
             },
             {% endfor %}
         ];
         window.wordExercise = AbstractWordExercise.create($('.dictionary-view .exercise-widget'), words);
+        window.wordExercise.orderWords('random');
         window.wordExercise.start();
     </script>
 {% endblock javascripts %}

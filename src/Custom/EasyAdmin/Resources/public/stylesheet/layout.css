@@ -1,0 +1,35 @@
+.navbar-locale-admin{
+    padding: 0 .2em;
+}
+.navbar-locale-admin button.dropdown-toggle{
+    color: white;
+    background: rgba(255,255,255, 0.1);
+}
+.navbar-locale-admin button.dropdown-toggle:hover{
+    background: rgba(255,255,255, 0.2);
+}
+
+
+.animated-control .icon.wait,
+.animated-control .icon.done,
+.animated-control .icon.fail{
+    display: none;
+}
+.animated-control.wait .icon.wait{
+    display: inline-block;
+    color: blue;
+    animation: rotateAnimation .8s linear infinite;
+}
+.animated-control.done .icon.done{
+    display: inline-block;
+    color: green;
+}
+.animated-control.fail .icon.fail{
+    display: inline-block;
+    color: red;
+}
+
+.action-icon-placeholder{
+    display: inline-block;
+    width: 2em;
+}

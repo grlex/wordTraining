@@ -18,6 +18,9 @@ easy_admin:
               default: true
               label: menu.dictionaries
               icon: cube
+            - entity: DictionaryGroup
+              label: menu.dictionary_groups
+              icon: cube
             - entity: Word
               label: menu.words
               icon: cube
@@ -54,6 +57,47 @@ easy_admin:
                       type: password
                       type_options: {required: false}
 
+        DictionaryGroup:
+            controller: Custom\EasyAdmin\Controller\DictionaryGroupAdminController
+            class: AppBundle\Entity\DictionaryGroup
+            templates:
+                list: '@CustomEasyAdminBundle/Resources/views/templates/DictionaryGroups/list.html.twig'
+            form:
+              fields: ['title', 'maxColumns', 'parent', 'children', 'dictionaries']
+            list:
+              title: Groups
+              dql_filter: 'entity.parent IS NULL'
+              sort: ['sort', 'ASC']
+              fields:
+                - property: id
+                  sortable: false
+                - property: title
+                  sortable: false
+                - property: maxColumns
+                  sortable: false
+                - property: dictionaries
+                  sortable: false
+
+              actions:
+                - name: up
+                  icon: arrow-up
+                  label: false
+                  css_class: text-success
+                - name: down
+                  icon: arrow-down
+                  label: false
+                  css_class: text-success
+                - name: edit
+                  icon: edit
+                  label: false
+                - name: delete
+                  icon: remove
+                  label: false
+                - name: newChild
+                  icon: plus
+                  label: false
+
+
         Dictionary:
             controller: Custom\EasyAdmin\Controller\DictionaryAdminController
             class: AppBundle\Entity\Dictionary
@@ -63,6 +107,7 @@ easy_admin:
                 fields:
                     - id
                     - name
+                    - group
                     - words
                     - property: processingInfo
                       template: '@CustomEasyAdminBundle/Resources/views/dictionary/field_dictionary_processing.html.twig'
@@ -73,8 +118,11 @@ easy_admin:
             form:
                 fields:
                     - name
+                    - group
                     - property: words
                       type: Custom\EasyAdmin\Form\WordsCollectionType
+                form_options:
+                    csrf_protection: false
             new:
                 form_options:
                     csrf_protection: false

@@ -1,0 +1,55 @@
+
+/** new styles **/
+
+.group-row > td > .folder,
+.group-row > td > .folder-placeholder{
+    display: inline-block;
+    width: 1.2em;
+}
+
+.group-row > td > .structure-controls{
+
+    float: right;
+    padding: 0 1em;
+    background: linear-gradient(to right, transparent 0, white 5%, white 100%);
+
+}
+
+.group-row > td > .structure-controls .control{
+    padding: 0 1em;
+}
+
+.group-row.hidden{
+    display: none;
+}
+
+.group-row.first .action-up,
+.group-row.last  .action-down{
+    color: rgba(29, 98, 8, 0.17);
+    cursor: default;
+}
+
+.groups-table-overlay{
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255, .6);
+    z-index: 100;
+    text-align: center;
+    font-size: 4em;
+}
+.groups-table-overlay::before{
+    content: '';
+    display: inline-block;
+    vertical-align: middle;
+    height: 100%;
+}
+
+.table-responsive{
+    position: relative;
+}
+
+

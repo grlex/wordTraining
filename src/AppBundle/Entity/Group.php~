@@ -1,0 +1,57 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Alexey Grigoriev
+ * Date: 05.05.2018
+ * Time: 19:07
+ */
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Class Group
+ * @package AppBundle\Entity
+ * @ORM\Entity
+ */
+class Group {
+
+    /**
+     * @var int
+     * @ORM\Id
+     * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    private $id;
+
+    /**
+     * @var string
+     * @ORM\Column(type="string", length=200)
+     */
+    private $title;
+
+    /**
+     * @var int
+     * @ORM\Column(type="integer", nullable=false, options={"default":1})
+     */
+    private $maxColumns;
+
+    /**
+     * @var Group
+     * @ORM\ManyToOne(targetEntity="Group", inversedBy="children")
+     */
+    private $parent;
+
+    /**
+     * @var Group[]
+     * @ORM\OneToMany(targetEntity="Group", mappedBy="parent")
+     */
+    private $children;
+
+    /**
+     * @var Dictionary[]
+     * @ORM\OneToMany(targetEntity="Dictionary", mappedBy="group")
+     */
+    private $dictionaries;
+} 

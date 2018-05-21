@@ -10,6 +10,10 @@ dictionary_admin:
     resource: "@CustomEasyAdminBundle/Controller/DictionaryAdminController.php"
     type:     annotation
     prefix:   /admin
+dictionary_group_admin:
+    resource: "@CustomEasyAdminBundle/Controller/DictionaryGroupAdminController.php"
+    type:     annotation
+    prefix:   /admin
 settings_admin:
     resource: "@CustomEasyAdminBundle/Controller/SettingsAdminController.php"
     type:     annotation

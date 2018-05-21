@@ -50,26 +50,24 @@ main > .container > .row{
 }
 
 
-.status .icon,
-.status.ajax-wait .icon.icon.icon:not(.wait){
+.animated-control .icon{
     display: none;
 }
-.status.ajax-ok .icon.done,
-.status.ajax-fail .icon.fail,
-.status.ajax-wait .icon.wait{
+.animated-control.wait .icon.wait{
     display: inline-block;
-    vertical-align: middle;
-}
-.status.ajax-wait .icon.wait{
-    animation: rotateAnimation .8s linear infinite;
     color: blue;
+    animation: rotateAnimation .8s linear infinite;
 }
-.status.ajax-ok{
+.animated-control.done .icon.done{
+    display: inline-block;
     color: green;
 }
-.status.ajax-fail{
+.animated-control.fail .icon.fail{
+    display: inline-block;
     color: red;
 }
+
+
 
 
 
@@ -82,6 +80,47 @@ main > .container > .row{
     border-radius: .2em;
 }
 
+.panel.group{
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    padding-bottom: 1em;
+}
+.panel.group > .panel-heading{
+
+    box-shadow: 0 0 1px 1px silver;
+    position: relative;
+}
+
+.panel.group  .panel-body{
+    padding-top: .2em;
+}
+.panel-body > .panel-group{
+    padding-top: 1em;
+}
+.panel.group > .panel-headingd::after{
+    position: absolute;
+    left: 0;
+    top: 100%;
+    width:100%;
+    content: '';
+    border: 1em solid rgba(55,55,55,0.4);
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-bottom: none;
+}
+
+.panel.group .panel-title > .collapse-state > .icon.collapsed,
+.panel.group .panel-title > .collapse-state > .icon.expanded{
+    display: none;
+}
+.panel.group .panel-title .collapse-state.collapsed > .icon.collapsed,
+.panel.group .panel-title .collapse-state.expanded > .icon.expanded{
+    display: inline-block;
+    color: gray;
+    padding-left: .8em;
+}
 /** dictionary views with controls **/
 
 
@@ -129,7 +168,7 @@ main > .container > .row{
     right: 0;
     padding: .2em 1em;
 }
-.dictionary-view .package-control ul.dropdown-menu > li > a.remove .status.ready:not(.ajax-fail) .icon.ready{
+.dictionary-view .package-control ul.dropdown-menu > li > a.remove .status.ready:not(fail) .icon.ready{
     display: inline;
     color: #b50000;
 }
@@ -186,7 +225,6 @@ main > .container > .row{
     background: #fff;
     min-height: 3.5em;
     position: relative;
-
 }
 .dictionary-view ul.words-list li.word:nth-child(even) {
     background: #f3f3f3;
@@ -194,33 +232,104 @@ main > .container > .row{
 
 
 
-.dictionary-view .words-list .word .attribute.pronounce.pictures{
-    min-height: 3.5em;
-    padding: .7em .1em;
+.dictionary-view .words-list .word .attribute.pronounce.pictures.info{
     white-space: nowrap;
+    padding-top: 0.4em;
 }
 
-.dictionary-view .words-list .word .attribute.pronounce.pictures .widget {
-    display: inline-block;
+.dictionary-view .words-list .word .attribute.pronounce.pictures.info .widget {
     vertical-align: top;
+    display: inline-block;
+    padding: 0 .1em;
     white-space: normal;
 }
 
-.dictionary-view .words-list .word .attribute.pronounce.pictures
-.word-pictures-widget .show-pictures .word-pictures-popup{
-    margin-top: 1em;
-    margin-left: 1em;
-    right: 3em;
-
+.dictionary-view .words-list .word .attribute.pronounce.pictures.info
+.dropdown-widget .show-dropdown{
+    display: block;
+    font-size: 1.6em;
+    padding: .2em .2em .6em;
+    white-space: normal;
+    color: silver;
 }
 
+.dictionary-view .words-list .word .attribute.pronounce.pictures.info
+.dropdown-widget.avail .show-dropdown{
+    color: black;
+    cursor: pointer;
+}
+
+.dictionary-view .words-list .word .attribute.pronounce.pictures.info
+.dropdown-widget .dropdown-panel{
+    position: relative;
+    display: none;
+    padding: 1em;
+    margin-top: 1em;
+    background: white;
+    box-shadow: 0 0 1em 0 gray;
+    z-index: 10;
+    cursor: default;
+    font-size: .6em;
+}
+
+.dictionary-view .words-list .word .attribute.pronounce.pictures.info
+.dropdown-widget .dropdown-panel .dropdown-body{
+    display: inline-block;
+    background: lightgreen;
+}
+
+.dictionary-view .words-list .word .attribute.pronounce.pictures.info
+.dropdown-widget.avail .show-dropdown:hover .dropdown-panel{
+    display: block;
+}
+
+.dictionary-view .words-list .word .attribute.pronounce.pictures.info
+.dropdown-widget.avail .show-dropdown:hover .dropdown-panel img{
+    max-width: 300px;
+    max-height: 300px
+}
+
+
 @media screen and (min-width: 768px){
-    .dictionary-view .words-list .word .attribute.pronounce.pictures
-    .word-pictures-widget .show-pictures .word-pictures-popup{
-        margin-top: 1em;
-        right: auto;
-        margin-left: -390px;
+    .dropdown-widget .show-dropdown{
+        width: 1.4em;
+    }
+    .dictionary-view .words-list .word .attribute.pronounce.pictures.info
+    .dropdown-widget .dropdown-panel{
         width: 700px;
+    }
+    .dictionary-view .words-list .word .attribute.pronounce.pictures.info
+    .word-pictures-widget .dropdown-panel{
+        margin-left: -402px;
+    }
+    .dictionary-view .words-list .word .attribute.pronounce.pictures.info
+    .word-info-widget .dropdown-panel{
+        margin-left: -436px;
+    }
+}
+@media screen and (max-width: 767px){
+    .dictionary-view .words-list .word .attribute.pronounce.pictures.info{
+        padding-left: 20px;
+    }
+    .dictionary-view .words-list .word .attribute.pronounce.pictures.info
+    .dropdown-widget{
+        padding-right: 30px;
+        box-sizing: border-box;
+        width: 100%;
+        margin-right: -100%;
+    }
+    .dictionary-view .words-list .word .attribute.pronounce.pictures.info
+    .word-info-widget{
+        margin-left: 30px;
+        padding-right: 60px;
+    }
+    .dictionary-view .words-list .word .attribute.pronounce.pictures.info
+    .word-pictures-widget .dropdown-panel{
+        margin-left: -40px;
+    }
+    .dictionary-view .words-list .word .attribute.pronounce.pictures.info
+    .word-info-widget .dropdown-panel{
+        margin-left: -70px;
     }
 }
 
@@ -241,28 +350,19 @@ main > .container > .row{
     cursor: default;
  }
 
-.dictionary-view .words-list .word .attribute.spelling .checker .icon,
-.dictionary-view .words-list .word .attribute.spelling .checker.ajax-wait .icon.icon.icon:not(.wait){
-    display: none;
-}
+
 .dictionary-view .words-list .word .attribute.spelling .checker.checked .icon.checked,
-.dictionary-view .words-list .word .attribute.spelling .checker:not(.checked) .icon.unchecked,
-.dictionary-view .words-list .word .attribute.spelling .checker.ajax-wait .icon.wait{
+.dictionary-view .words-list .word .attribute.spelling .checker:not(.checked) .icon.unchecked{
     display: inline-block;
     vertical-align: middle;
 }
-.dictionary-view .words-list .word .attribute.spelling .checker.ajax-wait .icon.wait{
-    animation: rotateAnimation .8s linear infinite;
-    color: blue;
+.dictionary-view .words-list .word .attribute.spelling .checker.wait.wait .icon.checked,
+.dictionary-view .words-list .word .attribute.spelling .checker.wait.wait .icon.unchecked{
+    display: none;
 }
-.dictionary-view .words-list .word .attribute.spelling .checker.ajax-ok{
-    color: green;
-}
-.dictionary-view .words-list .word .attribute.spelling .checker.ajax-fail{
-    color: red;
-}
-.dictionary-view .words-list .word .attribute.spelling .checker.ajax-ok .icon,
-.dictionary-view .words-list .word .attribute.spelling .checker.ajax-fail .icon{
+
+.dictionary-view .words-list .word .attribute.spelling .checker.done .icon,
+.dictionary-view .words-list .word .attribute.spelling .checker.fail .icon{
     font-size: 1.2em;
 }
 

@@ -41,6 +41,7 @@ class Dictionary {
     /**
      * @var Word[]
      * @ORM\OneToMany(targetEntity="Word", mappedBy="dictionary", cascade={"persist", "remove", "merge", "detach"}, orphanRemoval=true)
+     * @ORM\OrderBy({"spelling" = "ASC"})
      */
     private $words;
 
@@ -50,6 +51,11 @@ class Dictionary {
      */
     private $processingInfo;
 
+    /**
+     * @var DictionaryGroup
+     * @ORM\ManyToOne(targetEntity="DictionaryGroup", inversedBy="dictionaries")
+     */
+    private $group;
 
 
     public function __toString(){
@@ -147,10 +153,10 @@ class Dictionary {
     {
         $word->setDictionary($this);
         $this->words->add($word);
-        $total = $this->processingInfo->getTotal();
+        /*$total = $this->processingInfo->getTotal();
         $this->processingInfo->setTotal(++$total);
         $this->processingInfo->setProcessed(0);
-        $this->processingInfo->setStatus(DictionaryProcessing::STATUS_PENDING);
+        $this->processingInfo->setStatus(DictionaryProcessing::STATUS_PENDING);*/
         return $this;
     }
 
@@ -163,10 +169,10 @@ class Dictionary {
     {
         $word->setDictionary(null);
         $this->words->removeElement($word);
-        $total = $this->processingInfo->getTotal();
+        /*$total = $this->processingInfo->getTotal();
         $this->processingInfo->setTotal(--$total);
         $this->processingInfo->setProcessed(0);
-        $this->processingInfo->setStatus(DictionaryProcessing::STATUS_PENDING);
+        $this->processingInfo->setStatus(DictionaryProcessing::STATUS_PENDING);*/
     }
 
     /**
@@ -179,4 +185,28 @@ class Dictionary {
         return $this->words;
     }
 
+
+    /**
+     * Set group
+     *
+     * @param \AppBundle\Entity\DictionaryGroup $group
+     *
+     * @return Dictionary
+     */
+    public function setGroup(\AppBundle\Entity\DictionaryGroup $group = null)
+    {
+        $this->group = $group;
+
+        return $this;
+    }
+
+    /**
+     * Get group
+     *
+     * @return \AppBundle\Entity\DictionaryGroup
+     */
+    public function getGroup()
+    {
+        return $this->group;
+    }
 }

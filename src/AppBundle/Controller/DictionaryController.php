@@ -11,8 +11,13 @@ namespace AppBundle\Controller;
 
 
 use AppBundle\Entity\Word;
+use AppBundle\Entity\UserDictionaryGroup;
 use AppBundle\Form\FilterType;
+use Doctrine\ORM\Mapping\NamedNativeQuery;
+use Doctrine\ORM\NativeQuery;
 use Doctrine\ORM\Query;
+use EasyCorp\Bundle\EasyAdminBundle\Search\QueryBuilder;
+use Proxies\__CG__\AppBundle\Entity\DictionaryGroup;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -48,18 +53,32 @@ class DictionaryController extends Controller {
         ));
         $filterFormHandler->handleRequest($filterForm, $request);
 
+        $groupsQuery = $this->get('doctrine')->getEntityManager()->createQuery(
+            'select grp from AppBundle\\Entity\\DictionaryGroup grp where grp.parent is null order by grp.sort'
+        );
+        //$groupsQuery->setParameter(':parent', null);
         $listQuery = $this->getRepository()->createListQuery();
         $paginator = $this->get('knp_paginator');
         $pagination = $paginator->paginate(
-            $listQuery,
+            $groupsQuery,
             $request->query->getInt('page', 1),
-            10
+            50
         );
+
+        $groupCollapses = array();
+        if($this->getUser()){
+            $groupCollapses = $this->get('doctrine')->getEntityManager()->createQuery(
+                "select grp.id, udg.collapsed from AppBundle\\Entity\\UserDictionaryGroup udg JOIN udg.group grp".
+                " index by grp.id".
+                " where udg.user=:user"
+            )->setParameter(':user', $this->getUser())
+                ->getArrayResult();
+        }
 
 
         return $this->render('dictionary/list.html.twig', array(
             'pagination' => $pagination,
-            'filterForm' => $filterForm->createView()
+            'group_collapses' => $groupCollapses
         ));
     }
 
@@ -188,5 +207,32 @@ class DictionaryController extends Controller {
             'userGlobalPackages' => $userPackages['globals'],
             'chosenPackage' => $userPackages['chosen']
         ));
+    }
+
+    /**
+     * @Route("dictionary/set-group-collapse")
+     */
+    public function setGroupCollapseStatusAction(Request $request){
+        $user = $this->getUser();
+        if(is_null($user)) return new Response('You are not authorized', 401);
+        $groupId = $request->request->get('group_id');
+        $group = $this->getRepository(DictionaryGroup::class)->find($groupId);
+        if(is_null($group)) return new Response('Group not found', 404);
+
+        $userGroupState = $this->getRepository(UserDictionaryGroup::class)->findOneBy(array(
+            'user' => $user,
+            'group' => $group
+        ));
+        if(is_null($userGroupState)){
+            $userGroupState = new UserDictionaryGroup();
+            $userGroupState->setUser($user);
+            $userGroupState->setGroup($group);
+        }
+        $collapsed = $request->request->get('collapsed');
+        $userGroupState->setCollapsed($collapsed);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($userGroupState);
+        $em->flush();
+        return new Response($collapsed);
     }
 } 

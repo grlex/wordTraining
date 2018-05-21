@@ -23,7 +23,11 @@ class PackageType extends AbstractType {
             'required' => true,
             'label' => 'package.name',
         ));
-        $builder->add('is_local', Type\CheckboxType::class, array('required' => false, 'label' => 'package.is_local'));
+        $builder->add('is_local', Type\CheckboxType::class, array(
+            'required' => false,
+            'label' => 'package.is_local',
+            'data' => true
+        ));
         $builder->add('dictionary_id', Type\HiddenType::class, array( 'required' => false));
     }
 

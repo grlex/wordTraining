@@ -3,6 +3,7 @@ action.new: Добавить
 
 words_collection.import_from_file: Импортировать из файла
 words_collection.import_from_text: Импортировать из текста
+words_collection.autoload_all_attributes: Автозагрузка
 words_collection.new_word_paceholder: 'Введите слово'
 words_collection.filter: Фильтр...
 words_collection.duplicate: Слово уже есть в списке
@@ -18,6 +19,7 @@ words_collection.word.pronounce: Произношение
 words_collection.word.autoload: Загрузить поле автоматически
 words_collection.word.auto: Авто
 words_collection.word.pictures-list: Картинки
+
 
 
 dictionary_processing:
@@ -74,7 +76,8 @@ word_pictures:
   add: Добавить
   available_pictures: Доступные картинки
   chosen_pictures: Выбранные картинки
-  show_all: Показать все
+  search: Поиск
+  context: контекст
 
 
 
@@ -82,6 +85,7 @@ menu:
   go-public: Публичный раздел
   users: Пользователи
   dictionaries: Словари
+  dictionary_groups: Группы словарей
   words: Слова
   settings: Настройки
 
@@ -123,6 +127,7 @@ Words: Слова
 Spelling: Написание
 Transcription: Транскрипция
 Pronounce: Озвучка
+Pictures: Картинки
 Translation: Перевод
 
 

@@ -20,6 +20,7 @@ use Custom\EasyAdmin\WordHandler\Event\WaitingEvent;
 use Custom\EasyAdmin\WordHandler\Exception\AbortedException;
 use Custom\EasyAdmin\WordHandler\Exception\LoadingException;
 use Custom\EasyAdmin\WordHandler\WordLoader\WordLoaderInterface;
+use Custom\EasyAdmin\WordHandler\Utils\CUrlFileLoader;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -227,38 +228,10 @@ class DoctrineWordHandler implements WordHandlerInterface {
             }
             try {
                 $url = $attribute->getUrl();
-                $pictureData = file_get_contents($url);
-                if($pictureData === false) {
-                    $success = false;
-                }
-
                 $filename = $word->getSpelling()->getText().'_'.md5($url);
-                $maybeFileame = array_pop(explode('/',parse_url($url, PHP_URL_PATH)));
-                $extensionWithDot = strrchr($maybeFileame,'.');
-                if(!$extensionWithDot) {
-                    $contentType = preg_grep('/^Content-Type/', $http_response_header);
-                    $contentType = trim(explode(':',array_pop($contentType))[1]);
-
-                    switch($contentType){
-                        case 'image/jpeg':
-                            $extensionWithDot = '.jpg';
-                            break;
-                        case 'image/bmp':
-                        case 'image/x-windows-bmp':
-                            $extensionWithDot = '.bmp';
-                            break;
-                        case 'image/png':
-                            $extensionWithDot = '.png';
-                            break;
-                        case 'image/gif':
-                            $extensionWithDot = '.gif';
-                            break;
-                    }
-                }
-                $filename.=$extensionWithDot;
                 $filepath = $this->pictureDir.'/'.$filename;
-                file_put_contents($filepath, $pictureData);
-                $attribute->setFilename($filename);
+                $guessedExtension = CUrlFileLoader::download($url, $filepath, true);
+                $attribute->setFilename($filename.'.'.$guessedExtension);
             }
             catch(\Exception $ex){
                 throw $ex;
@@ -315,7 +288,9 @@ class DoctrineWordHandler implements WordHandlerInterface {
             return $autoAttribute->getStatus() != WordAttribute::STATUS_UNAVAILABLE;
         }*/
 
+
         $text = call_user_func([$this->loader, $loaderMethod], $spellingText);
+
 
         if($text===false) {
             $unavailableAttribute = $this->doctrine->getManager()->getRepository(get_class($attribute))->findOneByStatus(WordAttribute::STATUS_UNAVAILABLE);

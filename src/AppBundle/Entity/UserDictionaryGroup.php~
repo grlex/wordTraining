@@ -1,0 +1,41 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Alexey Grigoriev
+ * Date: 08.05.2018
+ * Time: 22:14
+ */
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Class UserDictionaryGroup
+ * @package AppBundle\Entity
+ * @ORM\Entity
+ */
+class UserDictionaryGroup {
+    /**
+     * @var integer
+     * @ORM\Id
+     * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    private $id;
+    /**
+     * @var User
+     * @ORM\ManyToOne(targetEntity="User")
+     */
+    private $user;
+    /**
+     * @var DictionaryGroup
+     * @ORM\ManyToOne(targetEntity="DictionaryGroup")
+     */
+    private $group;
+    /**
+     * @var bool
+     * @ORM\Column(type="boolean")
+     */
+    private $collapsed;
+} 

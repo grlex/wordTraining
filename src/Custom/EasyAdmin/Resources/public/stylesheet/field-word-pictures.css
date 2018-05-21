@@ -1,0 +1,28 @@
+.word-pictures-widget .show-pictures{
+    display: inline-block;
+    font-size: 1.6em;
+    padding: .2em;
+    cursor: pointer;
+}
+.word-pictures-widget .show-pictures .word-pictures-popup{
+    position: relative;
+    display: none;
+    padding: 1em;
+    background: white;
+    box-shadow: 0 0 1em 0 gray;
+    z-index: 10;
+    cursor: default;
+    font-size: 0.6em;
+}
+
+
+.word-pictures-widget .show-pictures:hover{
+    padding-bottom: 1em;
+}
+.word-pictures-widget .show-pictures:hover .word-pictures-popup{
+    display: block;
+}
+.word-pictures-widget .show-pictures:hover .word-pictures-popup img{
+    max-width: 300px;
+    max-height: 300px
+}

@@ -1,0 +1,144 @@
+{% extends "@EasyAdminBundle/Resources/views/default/list.html.twig" %}
+
+
+{% block main %}
+    {% set _list_item_actions = easyadmin_get_actions_for_list_item(_entity_config.name) %}
+    {% block group_list %}
+    <ul class="group-list list-unstyled top-list">
+        <div class="overlay animated-control">
+            <span class="wait icon fa fa-spinner"></span>
+            <span class="done icon fa fa-check"></span>
+            <span class="fail icon fa fa-warning"></span>
+        </div>
+        {% for item in paginator.currentPageResults %}
+            {# the empty string concatenation is needed when the primary key is an object (e.g. an Uuid object) #}
+            {% block group_list_item %}
+                {% set _item_id = '' ~ attribute(item, _entity_config.primary_key_field_name) %}
+                <li class="group-item" data-id="{{ _item_id }}">
+                    <div class="group-item-header clearfix">
+                                <span class="group-title">
+                                    {{ item.id }} / {{ item.title }}
+                                </span>
+                        {#
+                        {% for field, metadata in fields %}
+                            {% set isSortingField = metadata.property == app.request.get('sortField') %}
+                            {% set _column_label =  (metadata.label ?: field|humanize)|trans(_trans_parameters)  %}
+
+                            <td data-label="{{ _column_label }}" class="{{ isSortingField ? 'sorted' }} {{ metadata.dataType|lower }} {{ metadata.css_class }}">
+                                {{ easyadmin_render_field_for_list_view(_entity_config.name, item, metadata) }}
+                            </td>
+                        {% endfor %}
+                        #}
+                        {% if _list_item_actions|length > 0 %}
+                            {% set _column_label =  'list.row_actions'|trans(_trans_parameters, 'EasyAdminBundle') %}
+                            {% if item.children|length > 0 %}
+                                <a class="folder">
+                                    <i class="fa fa-folder-open-o"></i>
+                                </a>
+                            {% else %}
+                                <span class="folder-placeholder"></span>
+                            {% endif %}
+                            <span data-label="{{ _column_label }}" class="actions">
+                                        {% block item_actions %}
+                                            {{ include('@EasyAdmin/default/includes/_actions.html.twig', {
+                                            actions: _list_item_actions,
+                                            request_parameters: _request_parameters,
+                                            translation_domain: _entity_config.translation_domain,
+                                            trans_parameters: _trans_parameters,
+                                            item_id: _item_id,
+                                            item_has_children: item.children|length > 0
+                                            }, with_context = false) }}
+                                        {% endblock item_actions %}
+                                    </span>
+                        {% endif %}
+                    </div>
+                    <ul class="group-list list-unstyled">
+                    {% for item in item.children %}
+                        {{ block('group_list_item' ) }}
+                    {% endfor %}
+                    </ul>
+                </li>
+            {% endblock group_list_item %}
+        {% else %}
+            <li>
+                <span class="no-results">
+                    {{ 'search.no_results'|trans(_trans_parameters, 'EasyAdminBundle') }}
+                </span>
+            </li>
+        {% endfor %}
+    </ul>
+    {% endblock group_list %}
+
+    {% block paginator %}
+        {{ include(_entity_config.templates.paginator) }}
+    {% endblock paginator %}
+
+    {% block delete_form %}
+        {% set referer = paginator.currentPage == paginator.nbPages and 1 != paginator.currentPage and 1 == paginator.currentPageResults.count
+        ? path('easyadmin', app.request.query|merge({ page: app.request.query.get('page') - 1 }))
+        : app.request.requestUri
+        %}
+
+        {{ include('@EasyAdmin/default/includes/_delete_form.html.twig', {
+        view: 'list',
+        referer: referer|url_encode,
+        delete_form: delete_form_template,
+        _translation_domain: _entity_config.translation_domain,
+        _trans_parameters: _trans_parameters,
+        _entity_config: _entity_config,
+        }, with_context = false) }}
+    {% endblock delete_form %}
+{% endblock main %}
+
+{% block body_javascript %}
+    {{ parent() }}
+
+    <script type="text/javascript">
+        $(function() {
+            $('#main').find('table .toggle input[type="checkbox"]').change(function() {
+                var toggle = $(this);
+                var newValue = toggle.prop('checked');
+                var oldValue = !newValue;
+
+                var columnIndex = $(this).closest('td').index() + 1;
+                var propertyName = $('table th.toggle:nth-child(' + columnIndex + ')').data('property-name');
+
+                var toggleUrl = "{{ path('easyadmin', { action: 'edit', entity: _entity_config.name, view: 'list' })|raw }}"
+                        + "&id=" + $(this).closest('tr').data('id')
+                        + "&property=" + propertyName
+                        + "&newValue=" + newValue.toString();
+
+                var toggleRequest = $.ajax({ type: "GET", url: toggleUrl, data: {} });
+
+                toggleRequest.done(function(result) {});
+
+                toggleRequest.fail(function() {
+                    // in case of error, restore the original value and disable the toggle
+                    toggle.bootstrapToggle(oldValue == true ? 'on' : 'off');
+                    toggle.bootstrapToggle('disable');
+                });
+            });
+
+            $('.action-delete').on('click', function(e) {
+                e.preventDefault();
+                var id = $(this).parents('tr').first().data('id');
+
+                $('#modal-delete').modal({ backdrop: true, keyboard: true })
+                        .off('click', '#modal-delete-button')
+                        .on('click', '#modal-delete-button', function () {
+                            var deleteForm = $('#delete-form');
+                            deleteForm.attr('action', deleteForm.attr('action').replace('__id__', id));
+                            deleteForm.trigger('submit');
+                        });
+            });
+        });
+    </script>
+
+    {% if 'search' == app.request.get('action') %}
+        <script type="text/javascript">
+            var _search_query = "{{ app.request.get('query')|default('')|e('js') }}";
+            // the original query is prepended to allow matching exact phrases in addition to single words
+            $('#main').find('table tbody').highlight($.merge([_search_query], _search_query.split(' ')));
+        </script>
+    {% endif %}
+{% endblock %}

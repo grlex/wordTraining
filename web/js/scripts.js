@@ -72,7 +72,7 @@ class AbstractWordExercise {
             .bind('error', function(e){
                 $(e.target).closest('.word-pronounce-widget').addClass('disabled');
             });
-        this.questionBodyElem.find('.pronounce-transcription-hint').appendTo(this.questionFooterElem);
+        //this.questionBodyElem.find('.pronounce-transcription-hint').appendTo(this.questionFooterElem);
     }
 
     start(){
@@ -126,7 +126,6 @@ class AbstractWordExercise {
                     break;
             }
         });
-        this.start();
     }
 
     displayResult(){
@@ -187,6 +186,7 @@ class AbstractWordExercise {
         this.updateQuestion();
         this.updateAnswer();
         this.updateCounters();
+        this.updatePronounceHint();
     }
 
     getAnswerText(word){
@@ -219,15 +219,15 @@ class AbstractWordExercise {
                 break;
             case 2:
             case 5:
-                this.questionBodyElem.text(this.currentWord.translation);
+                var transText = this.currentWord.translation;
+                if(this.currentWord.spelling.split(' ').length > 1) transText += ' ~';
+                this.questionBodyElem.text(transText);
                 break;
             case 3:
             case 4:
             case 6:
                 this.questionBodyElem.find('audio').get(0).src = this.currentWord.audioURL;
-                this.updateAudioHint();
                 break;
-
         }
     }
 
@@ -236,7 +236,7 @@ class AbstractWordExercise {
         this.questionHeaderElem.find('.correct-counter > .counter').text(this.correctCounter);
     }
 
-    updateAudioHint(){
+    updatePronounceHint(){
         this.questionFooterElem.find('.pronounce-transcription-hint .text')
             .text(this.currentWord.transcription);
     }
@@ -568,7 +568,7 @@ class WordChoiceExercise extends AbstractWordExercise{
 
 
 
-        checkerElem.addClass('ajax-wait disabled');
+        checkerElem.addClass('wait disabled');
         var packageId = checkerElem.closest('.words-list').data('chosen-package-id');
         var wordId = checkerElem.closest('.word').data('word-id');
         $.post('/package/update-word-entrance', {
@@ -576,14 +576,14 @@ class WordChoiceExercise extends AbstractWordExercise{
             wordId: wordId,
             entrance: entrance
         }).always(function(data, status){
-            checkerElem.removeClass('ajax-wait')
-                .addClass(status=='success' ? 'ajax-ok' : 'ajax-fail');
+            checkerElem.removeClass('wait ')
+                .addClass(status=='success' ? 'done' : 'fail');
             if(status=='success') {
                 checkerElem.toggleClass('checked');
                 checkerElem.closest('.word').toggleClass('in-package');
             }
             setTimeout(function(){
-                checkerElem.removeClass('ajax-ok ajax-fail disabled');
+                checkerElem.removeClass('done fail disabled');
             },200);
 
         });
@@ -611,6 +611,7 @@ class WordChoiceExercise extends AbstractWordExercise{
         $(e.currentTarget).closest('ul').find('a').removeClass('selected');
         $(e.currentTarget).toggleClass('selected');
         window.wordExercise.orderWords(e.currentTarget.dataset.order);
+        window.wordExercise.start();
     });
 
 
@@ -634,18 +635,18 @@ class WordChoiceExercise extends AbstractWordExercise{
         var linkElem = $(this);
         var statusElem = linkElem.find('.status');
         if(!statusElem.hasClass('ready')) return;
-        statusElem.removeClass('ready').addClass('ajax-wait');
+        statusElem.removeClass('ready').addClass('wait');
         var packageId = linkElem.closest('li.package').data('package-id');
 
         $.post('/package/remove/'+packageId).always(function(data, status){
-            statusElem.removeClass('ajax-wait')
-                .addClass(status=='success' ? 'ajax-ok' : 'ajax-fail');
+            statusElem.removeClass('wait')
+                .addClass(status=='success' ? 'done' : 'fail');
             setTimeout(function(){
                 if(status=='success') {
                     window.location.reload();
                 }
                 else{
-                    statusElem.addClass('ready');
+                    statusElem.removeClass('done fail').addClass('ready');
                 }
             },200);
 
@@ -660,15 +661,15 @@ class WordChoiceExercise extends AbstractWordExercise{
         var formData =  formElem.serializeArray();
         var modalElem = formElem.closest('.modal');
         var statusElem = modalElem.find('.modal-footer .status');
-        statusElem.removeClass('ajax-ok ajax-fail').addClass('ajax-wait');
+        statusElem.removeClass('done fail').addClass('wait');
         $.ajax({
             url: e.target.form.action,
             data: formData,
             method: 'post',
             dataType: 'json'
         }).always(function(data, status, jqXHR){
-            statusElem.removeClass('ajax-wait')
-                .addClass(status=='success' ? 'ajax-ok' : 'ajax-fail');
+            statusElem.removeClass('wait')
+                .addClass(status=='success' ? 'done' : 'fail');
             if(status!='success') {
                 data = data.responseText ? JSON.parse(data.responseText) : {};
                 if(data.errors){
@@ -685,7 +686,7 @@ class WordChoiceExercise extends AbstractWordExercise{
             }
             formElem.find('button').removeAttr('disabled');
             setTimeout(function(){
-                statusElem.removeClass('ajax-ok ajax-fail');
+                statusElem.removeClass('done fail');
                 if(status=='success') {
                     modalElem.modal('hide');
                     var query = window.location.search.replace(/package_id=(all|\d+)/, '');
@@ -698,6 +699,36 @@ class WordChoiceExercise extends AbstractWordExercise{
         });
     });
 
-
+    $('.panel.group > .panel-collapse')
+        .on('hide.bs.collapse', function (e) {
+            e.stopPropagation();
+            var stateElem = $(this).prev('.panel-heading').children('.panel-title').children('.collapse-state');
+            stateElem.removeClass('done fail collapsed expanded').addClass('collapsed wait');
+            var group_id = this.id.substring('collapse_'.length);
+            $.post('/dictionary/set-group-collapse', { 'group_id': group_id, 'collapsed': 1 })
+                .done(function(){
+                    stateElem.removeClass('wait').addClass('done');
+                    setTimeout(function(){ stateElem.removeClass('done')},300);
+                })
+                .fail(function(){
+                    stateElem.removeClass('wait').addClass('fail');
+                    setTimeout(function(){ stateElem.removeClass('fail')},300);
+                });
+        })
+        .on('show.bs.collapse', function (e) {
+            e.stopPropagation();
+            var stateElem = $(this).prev('.panel-heading').children('.panel-title').children('.collapse-state');
+            stateElem.removeClass('done fail collapsed expanded').addClass('expanded wait');
+            var group_id = this.id.substring('collapse_'.length);
+            $.post('/dictionary/set-group-collapse', { 'group_id': group_id, 'collapsed': 0 })
+                .done(function(){
+                    stateElem.removeClass('wait').addClass('done');
+                    setTimeout(function(){ stateElem.removeClass('done')},300);
+                })
+                .fail(function(){
+                    stateElem.removeClass('wait').addClass('fail');
+                    setTimeout(function(){ stateElem.removeClass('fail')},300);
+                });
+        });
 })(jQuery);
 

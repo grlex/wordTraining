@@ -26,7 +26,7 @@
 .dictionary-processing-widget.processing .icon.processing{
     display: inline-block;
     color: blue;
-    animation: rotateAnimation 1s linear infinite;
+    animation: rotateAnimation .8s linear infinite;
 }
 .dictionary-processing-widget.done .icon.done{
     display: inline-block;

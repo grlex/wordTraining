@@ -396,7 +396,7 @@ class WordsListHandler{
         });
     }
 
-    sortWordAfterEdit(spellingElem){
+    sortWord(spellingElem){
 
 
         var newSpelling = spellingElem.val().trim();
@@ -468,7 +468,7 @@ class WordsListHandler{
     onWordSpellingPostEdit(event){
         clearTimeout(this.keyPressSortTimer);
         this.keyPressSortTimer = setTimeout(
-            this.sortWordAfterEdit.bind(this, $(event.target)),
+            this.sortWord.bind(this, $(event.target)),
             this.keyPressSortDelay
         );
     }
@@ -887,6 +887,157 @@ class WordsFormHandler{
     }
 }
 
+
+class WordsPicturesHandler{
+    constructor(collection){
+        this.collection = collection;
+        this.modal = collection.find('#pictures.modal');
+        this.modalBody = this.modal.find('.modal-body');
+        collection.find('button.show-pictures-modal').bind('click', this.onModalShow.bind(this));
+        this.modal.bind('hidden.bs.modal', this.onModalHidden.bind(this));
+        this.modal.find('button.accept').bind('click', this.onModalAccept.bind(this));
+        this.pictureMarkupTemplate  =
+            '<li>' +
+            '<span class="remove fa fa-close"></span>' +
+            '<img src="__url__" alt="__title__" title="__title__">' +
+            '<div class="form-data">' +
+            '<input type="hidden" name="__collection_name__[__index__][url]" value="__url__" class="url"/>' +
+            '<input type="hidden" name="__collection_name__[__index__][title]" value="__title__"/>' +
+            '<input type="hidden" name="__collection_name__[__index__][chosen]" value="0" class="chosen-input"/>' +
+            '</div>' +
+            '</li>';
+        this.modalBody.on('click', 'ul.list li', this.onPictureItemClick.bind(this));
+        this.modalBody.on('click', 'ul.list li .remove', this.onPictureItemRemoveClick.bind(this));
+        this.modal.find('button.search').bind('click', this.onSearchClick.bind(this));
+        this.modal.find('button.add').bind('click', this.onAddClick(this));
+    }
+
+    onSearchClick(e){
+        var searchButton = $(e.currentTarget);
+        if(searchButton.hasClass('wait')) return;
+        searchButton.attr('disabled', 'disabled');
+        var self = this;
+        var cachedPicturesWrapper = this.modal.data('cache-wrapper');
+        var cachedList = this.modal.find('.modal-body ul.list');
+        var wordElem = cachedPicturesWrapper.closest('.word');
+        var wordText = wordElem.find('.word-spelling').find('.spelling').val();
+        var searchContext = searchButton.closest('.input-group').children('input.context').val();
+        if(true || !cachedPicturesWrapper.hasClass('preloaded')){
+            searchButton.addClass('wait');
+            var collectionName = cachedList.data('name');
+            var collectionIndex = cachedList.children().length;
+            $.get('/admin/image-search/'+encodeURIComponent(wordText+' - '+searchContext), function(data){
+                data.forEach(function(pictureInfo){
+                    if(cachedList.find('li > .form-data > input.url[value="'+pictureInfo.url+'"]').length > 0){
+                        return;
+                    }
+                    var imageHtml = self.pictureMarkupTemplate
+                        .replace(/__url__/g, pictureInfo.url)
+                        .replace(/__title__/g, pictureInfo.title)
+                        .replace(/__collection_name__/g, collectionName)
+                        .replace(/__index__/g, collectionIndex++);
+
+                    cachedList.append(imageHtml);
+                });
+                //cachedPicturesWrapper.addClass('preloaded');
+                searchButton.removeClass('wait').addClass('done');
+                setTimeout(function(){
+                    searchButton.removeClass('done').removeAttr('disabled');
+                },300);
+
+
+            });
+
+        }
+    }
+
+    onAddClick(e){
+
+    }
+
+    onPictureItemClick(e){
+        $(e.currentTarget).toggleClass('selected');
+    }
+
+    onPictureItemRemoveClick(e){
+        $(e.currentTarget).closest('li').remove();
+    }
+
+    onModalAccept(e){
+        this.modal.data('accepted', true);
+        this.modal.modal('hide');
+    }
+    onModalHidden(e){
+        if(this.modal.data('accepted')){
+            this.modalBody.find('ul.list li.chosen:not(.selected)').find('.form-data')
+                .children('input.chosen-input').val(0);
+            this.modalBody.find('ul.list li').removeClass('chosen');
+            this.modalBody.find('ul.list li.selected')
+                .removeClass('selected').addClass('chosen')
+                .find('.form-data')
+                .children('input.chosen-input').val(1);
+        }
+        else{
+            this.modalBody.find('ul.list li').removeClass('selected');
+        }
+        this.modalBody.find('ul.list').appendTo(this.modal.data('cache-wrapper'));
+        this.modal.data('accepted', false);
+    }
+    onModalShow(e){
+        var self = this;
+        var wordElem = $(e.target).closest('.word');
+        var cachedPicturesWrapper = wordElem.find('.cached-pictures');
+        var cachedList = cachedPicturesWrapper.find('ul.list');
+        //this.modalBody.find('ul.list').remove();
+        this.modalBody.append(cachedList);
+        cachedList.children('li.chosen').addClass('selected');
+        this.modal.data('cache-wrapper', cachedPicturesWrapper);
+        //
+        /*var showAllButton = this.modal.find('button.show-all');
+        if(cachedPicturesWrapper.hasClass('preloaded')) showAllButton.hide();
+        else showAllButton.show();*/
+        //
+
+        this.modal.find('.title-word-spelling').text(wordElem.find('.word-spelling input').val());
+
+    }
+}
+
+
+class WordsAllAutoCheckerHandler{
+    constructor(collection){
+        this.collection = collection;
+        this.list = collection.find('.words-list');
+        this.autoCheckerMenu = collection.find('.words-collection-header .all-auto-checker .dropdown-menu');
+        this.autoCheckerMenu.on('click', 'li', this.autoAllOptionClick.bind(this));
+    }
+
+    autoAllOptionClick(e){
+        var li = $(e.currentTarget);
+        li.toggleClass('checked');
+        var checked = li.hasClass('checked');
+        var attr = li.data('attribute');
+        switch(attr){
+            case 'translation':
+            case 'transcription':
+            case 'pictures':
+                this.list.find('.word-'+attr+' .auto-checker:enabled').each(function(index, checker){
+                    checker.checked = checked;
+                });
+                break;
+            case 'pronounce':
+                this.list.find('.word-'+attr+' .source-type select').each(function(index, selectElem){
+                    if(checked){
+                        $(selectElem).val(7);
+                    }
+                    else{
+                        $(selectElem).children().first().prop('selected', true);
+                    }
+                });
+                break;
+        }
+    }
+}
 /*
 class WordsCollection{
     constructor(collection){
@@ -909,6 +1060,8 @@ $('.words-collection').each(function(index, collection) {
     //var formHandler = new WordsFormHandler(collection);
     var filterHandler = new WordsFilterHandler(collection, searchIndex);
     var listHandler = new WordsListHandler(collection, searchIndex, filterHandler);
+    var picturesHandler = new WordsPicturesHandler(collection);
+    var allAutoCheckerHandler = new WordsAllAutoCheckerHandler(collection);
 });
 
 
@@ -918,3 +1071,4 @@ $('.words-collection').each(function(index, collection) {
 //Реализовать сортировку слова при его редактировании в списке
 //Обновить индекс при нажатии кнопки "Очистить список"
 //Может еще чего...
+

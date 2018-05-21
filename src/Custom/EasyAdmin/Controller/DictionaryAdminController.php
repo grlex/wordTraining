@@ -75,6 +75,7 @@ class DictionaryAdminController extends BaseAdminController {
     }
     protected function preSaveDictionaryEntity(Dictionary $dictionary){
         $dictionary->getProcessingInfo()->setProcessed(0);
+        $dictionary->getProcessingInfo()->setTotal($dictionary->getWords()->count());
         $dictionary->getProcessingInfo()->setStatus(DictionaryProcessing::STATUS_PENDING);
     }
 

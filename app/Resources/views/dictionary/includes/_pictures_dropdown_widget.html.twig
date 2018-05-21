@@ -1,6 +1,6 @@
-<div class="widget word-pictures-widget">
-    <div  class="show-pictures fa fa-image">
-        <div class="word-pictures-popup">
+<div class="widget word-pictures-widget dropdown-widget {{ value|length > 0 ? 'avail' }}">
+    <div  class="show-dropdown fa fa-image">
+        <div class="dropdown-panel">
             <ul class="list-unstyled">
                 {% for picture in value if picture.chosen %}
                     <li class="inline-block">

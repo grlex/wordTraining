@@ -73,7 +73,19 @@ class WordType extends AbstractType {
                 $word = null;
                 if($id){
                     $word = $doctrine->getRepository('AppBundle:Word')->find($id);
+                    if($word->getSpelling()->getText()!=$spelling->getText()){
+                        $pictures->clear();
+                    }
                 }
+
+                if(count(explode(' ',$spelling->getText()))>1){
+                    $transText = $translation->getText();
+                    $transText = trim($transText, '~ ');
+                    $translation->setText($transText);
+                }
+
+
+
                 if(!$word) $word = new Word();
                 $word->setSpelling($spelling);
                 $word->setTranslation($translation);
@@ -82,7 +94,8 @@ class WordType extends AbstractType {
 
                 if($picturesAuto){
                     $pictures->clear();
-                    $picturesList = $this->imageSearcher->search($spelling->getText());
+                    $searchContext = '';//$word->getDictionary() ? $word->getDictionary()->getName() : '';
+                    $picturesList = $this->imageSearcher->search($spelling->getText().' '.$searchContext);
                     foreach($picturesList as $pictureInfo){
                         $picture = new WordPicture();
 

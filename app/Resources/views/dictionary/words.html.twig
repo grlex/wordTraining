@@ -82,8 +82,8 @@
         <li class="col-sm-12 headers hidden-xs">
             <div class="header spelling col-sm-3"><span>{{ 'word.spelling'|trans }}</span></div>
             <div class="header transcription col-sm-3"><span>{{ 'word.transcription'|trans }}</span></div>
-            <div class="header pronounce col-sm-1"><span>{{ 'word.pronounce'|trans }}<br/>{{ 'word.pictures'|trans }}</span></div>
-            <div class="header translation col-sm-5"><span>{{ 'word.translation'|trans }}</span></div>
+            <div class="header pronounce col-sm-2"><span>{{ 'word.pronounce'|trans }}<br/>{{ 'word.pictures'|trans }}</span></div>
+            <div class="header translation col-sm-4"><span>{{ 'word.translation'|trans }}</span></div>
         </li>
         {% set is_predefined_package = chosenPackage.id in ['all-local', 'all-global'] %}
         {% for word in wordsPagination %}
@@ -92,9 +92,9 @@
                     data-word-id="{{ word.id }}">
                 <div class="row">
 
-                    <div class="spelling attribute col-sm-3 coll-xs-9">
+                    <div class="spelling attribute col-sm-3">
                         {% set class = is_predefined_package ? 'disabled checked' : in_package ? 'checked'  %}
-                        <div class="checker package-entrance text-vertical-middle {{ class }}"
+                        <div class="checker package-entrance text-vertical-middle animated-control {{ class }}"
                                 title="{{ 'dictionary.view.bind_to_chosen_package'|trans }}">
                             <span class="icon checked fa fa-check-square-o"></span>
                             <span class="icon unchecked fa fa-square-o"></span>
@@ -110,11 +110,14 @@
                         <span class="spy fa fa-eye"></span>
                         <span class="text">[ {{ word.transcription.text }} ]</span>
                     </div>
-                    <div class="pronounce pictures attribute col-sm-1">
+                    <div class="pronounce pictures info attribute col-sm-2">
+                        {% spaceless %}
                         {{ include('@CustomEasyAdminBundle/Resources/views/word/field_word_pronounce.html.twig', { value: word.pronounce }, with_context = false ) }}
-                        {{ include('@CustomEasyAdminBundle/Resources/views/word/field_word_pictures.html.twig', { value: word.pictures }, with_context = false ) }}
+                        {{ include('dictionary/includes/_pictures_dropdown_widget.html.twig', { value: word.pictures }, with_context = false ) }}
+                        {{ include('dictionary/includes/_info_dropdown_widget.html.twig', { value: word.pictures }, with_context = false ) }}
+                        {% endspaceless %}
                     </div>
-                    <div class="translation attribute col-sm-5">
+                    <div class="translation attribute col-sm-4">
                         <span class="spy fa fa-eye"></span>
                         <span class="text">{{ word.translation.text }}</span>
                     </div>
